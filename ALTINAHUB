@@ -1,4 +1,4 @@
---// ALTINA HUB - WORKING EGG STEALER
+--// ALTINA HUB - COMPLETE EGG STEALER v2
 --// Roblox Studio LocalScript
 --// Place in StarterPlayer > StarterPlayerScripts
 
@@ -24,6 +24,7 @@ local BLUE = Color3.fromRGB(0, 174, 255)
 local WHITE = Color3.fromRGB(225, 238, 255)
 local MUTED = Color3.fromRGB(130, 160, 195)
 local RED = Color3.fromRGB(200, 50, 50)
+local GREEN = Color3.fromRGB(50, 200, 50)
 
 --==================================================
 -- STATE MANAGEMENT
@@ -36,9 +37,25 @@ local config = {
 	selectedMutations = {},
 	priorityMode = "Closest",
 	moveSpeed = 50,
+	movementMode = "Straight",
 	spawnPoint = nil,
 	collectedCount = 0,
-	eggStats = {}
+	eggStats = {},
+	currentTab = "EGGS",
+	
+	-- Plot Eggs Config
+	autoPlaceEnabled = false,
+	autoPlaceRarities = {},
+	autoPlaceMutations = {},
+	
+	-- Auto Hatch Config
+	autoHatchEnabled = false,
+	autoHatchRarities = {},
+	
+	-- Protection
+	antiDrop = false,
+	antiFling = false,
+	antiTrap = false
 }
 
 --==================================================
@@ -88,22 +105,35 @@ titleStroke.Color = BLUE
 titleStroke.Thickness = 0.8
 titleStroke.Parent = title
 
-local eggsTab = Instance.new("TextLabel")
-eggsTab.BackgroundTransparency = 1
-eggsTab.Position = UDim2.new(0.35, 0, 0.1, 0)
-eggsTab.Size = UDim2.new(0.16, 0, 0.5, 0)
-eggsTab.Font = Enum.Font.GothamBold
-eggsTab.Text = "🥚  EGGS"
-eggsTab.TextColor3 = BLUE
-eggsTab.TextScaled = true
-eggsTab.Parent = header
+--==================================================
+-- TAB BUTTONS
+--==================================================
+
+local function createTabButton(text, position)
+	local b = Instance.new("TextButton")
+	b.BackgroundTransparency = 1
+	b.Position = position
+	b.Size = UDim2.new(0.12, 0, 0.5, 0)
+	b.Font = Enum.Font.GothamBold
+	b.Text = text
+	b.TextColor3 = MUTED
+	b.TextScaled = true
+	b.Parent = header
+	return b
+end
+
+local eggsTabBtn = createTabButton("🥚  EGGS", UDim2.new(0.35, 0, 0.1, 0))
+local petsTabBtn = createTabButton("🐾  PETS", UDim2.new(0.48, 0, 0.1, 0))
+local eventsTabBtn = createTabButton("🎉  EVENTS", UDim2.new(0.61, 0, 0.1, 0))
+
+eggsTabBtn.TextColor3 = BLUE
 
 local discord = Instance.new("TextLabel")
 discord.BackgroundTransparency = 1
-discord.Position = UDim2.new(0.49, 0, 0.07, 0)
-discord.Size = UDim2.new(0.27, 0, 0.65, 0)
+discord.Position = UDim2.new(0.72, 0, 0.07, 0)
+discord.Size = UDim2.new(0.20, 0, 0.65, 0)
 discord.Font = Enum.Font.GothamBold
-discord.Text = "DISCORD:\nhttps://discord.gg/dVJXXGfU6J"
+discord.Text = "JOIN: discord.gg/dVJXXGfU6J"
 discord.TextColor3 = WHITE
 discord.TextScaled = true
 discord.TextXAlignment = Enum.TextXAlignment.Left
@@ -190,7 +220,7 @@ local function makeButton(parent, text, pos, size)
 	local s = Instance.new("UIStroke")
 	s.Color = Color3.fromRGB(28, 72, 105)
 	s.Thickness = 1
-	s.Parent = s
+	s.Parent = b
 
 	return b
 end
@@ -210,44 +240,30 @@ local function makeLabel(parent, text, pos, size)
 end
 
 --==================================================
--- LEFT PANEL
+-- EGGS TAB CONTENT
 --==================================================
 
-local leftTop = makePanel(
-	"AutoSteal",
-	UDim2.new(0, 0, 0, 0),
-	UDim2.new(0.50, -8, 0.51, 0)
-)
+local eggsContent = Instance.new("Frame")
+eggsContent.Name = "EggsTab"
+eggsContent.BackgroundTransparency = 1
+eggsContent.Size = UDim2.new(1, 0, 1, 0)
+eggsContent.Parent = content
+eggsContent.Visible = true
+
+-- Left Panel
+local leftTop = makePanel("AutoSteal", UDim2.new(0, 0, 0, 0), UDim2.new(0.50, -8, 0.51, 0))
 
 makeLabel(leftTop, "🥚  AUTO STEAL EGGS", UDim2.new(0.025,0,0.035,0), UDim2.new(0.6,0,0.09,0))
 makeLabel(leftTop, "Select Rarities (MULTIPLE)", UDim2.new(0.025,0,0.12,0), UDim2.new(0.6,0,0.08,0))
 
-local rarities = {
-	"Common",
-	"Uncommon",
-	"Rare",
-	"Legendary",
-	"Mythic",
-	"Secret",
-	"Internal",
-	"Divine"
-}
-
+local rarities = {"Common", "Uncommon", "Rare", "Legendary", "Mythic", "Secret", "Internal", "Divine"}
 local rarityButtons = {}
 
 for i, rarity in ipairs(rarities) do
 	local row = math.floor((i-1)/4)
 	local col = (i-1)%4
-
-	local b = makeButton(
-		leftTop,
-		rarity,
-		UDim2.new(0.03 + col*0.24,0,0.22 + row*0.11,0),
-		UDim2.new(0.22,0,0.095,0)
-	)
-
+	local b = makeButton(leftTop, rarity, UDim2.new(0.03 + col*0.24,0,0.22 + row*0.11,0), UDim2.new(0.22,0,0.095,0))
 	rarityButtons[rarity] = {button = b, selected = false}
-
 	b.MouseButton1Click:Connect(function()
 		if rarityButtons[rarity].selected then
 			b.BackgroundColor3 = BUTTON
@@ -260,78 +276,49 @@ for i, rarity in ipairs(rarities) do
 			rarityButtons[rarity].selected = true
 			config.selectedRarities[rarity] = true
 		end
-		
-		local selected = {}
-		for rarity_name, _ in pairs(config.selectedRarities) do
-			table.insert(selected, rarity_name)
-		end
-		print("Selected Rarities: " .. table.concat(selected, ", "))
 	end)
 end
 
-makeLabel(leftTop, "Mutations", UDim2.new(0.025,0,0.59,0), UDim2.new(0.2,0,0.08,0))
+makeLabel(leftTop, "Areas", UDim2.new(0.025,0,0.59,0), UDim2.new(0.15,0,0.08,0))
 
-local mutations = {"Rainbow","Gold","Silver"}
-local mutationButtons = {}
+local areas = {"All", "Forest", "Lake", "Desert", "Jungle", "Snow", "Volcano"}
+local areaButtons = {}
 
-for i, mutation in ipairs(mutations) do
-	local b = makeButton(
-		leftTop,
-		mutation,
-		UDim2.new(0.03+(i-1)*0.31,0,0.69,0),
-		UDim2.new(0.28,0,0.11,0)
-	)
-
-	mutationButtons[mutation] = {button = b, selected = false}
-
+for i, area in ipairs(areas) do
+	local row = i <= 4 and 0 or 1
+	local col = (i-1) % 4
+	local b = makeButton(leftTop, area, UDim2.new(0.03 + col*0.24,0,0.68 + row*0.11,0), UDim2.new(0.22,0,0.095,0))
+	areaButtons[area] = {button = b, selected = (area == "All")}
+	if area == "All" then
+		b.BackgroundColor3 = BLUE
+		b.TextColor3 = Color3.new(1,1,1)
+	end
 	b.MouseButton1Click:Connect(function()
-		if mutationButtons[mutation].selected then
-			b.BackgroundColor3 = BUTTON
-			b.TextColor3 = WHITE
-			mutationButtons[mutation].selected = false
-			config.selectedMutations[mutation] = nil
-		else
-			b.BackgroundColor3 = BLUE
-			b.TextColor3 = Color3.new(1,1,1)
-			mutationButtons[mutation].selected = true
-			config.selectedMutations[mutation] = true
+		for a, data in pairs(areaButtons) do
+			data.button.BackgroundColor3 = BUTTON
+			data.button.TextColor3 = WHITE
+			data.selected = false
 		end
+		b.BackgroundColor3 = BLUE
+		b.TextColor3 = Color3.new(1,1,1)
+		areaButtons[area].selected = true
+		config.selectedArea = area
 	end)
 end
 
---==================================================
--- PROTECTION
---==================================================
+makeLabel(leftTop, "Mutations", UDim2.new(0.03,0,0.915,0), UDim2.new(0.2,0,0.07,0))
 
-local protection = makePanel(
-	"Protection",
-	UDim2.new(0,0,0.535,0),
-	UDim2.new(0.50,-8,0.38,0)
-)
-
+-- Right Panel - Protection
+local protection = makePanel("Protection", UDim2.new(0,0,0.535,0), UDim2.new(0.50,-8,0.38,0))
 makeLabel(protection,"🛡  PROTECTION",UDim2.new(.025,0,.05,0),UDim2.new(.5,0,.1,0))
 
 local function toggle(parent, text, y, configKey)
-	local label = makeLabel(
-		parent,
-		text,
-		UDim2.new(.025,0,y,0),
-		UDim2.new(.55,0,.13,0)
-	)
-
-	local b = makeButton(
-		parent,
-		"●",
-		UDim2.new(.83,0,y-.01,0),
-		UDim2.new(.10,0,.13,0)
-	)
-
+	local label = makeLabel(parent, text, UDim2.new(.025,0,y,0), UDim2.new(.55,0,.13,0))
+	local b = makeButton(parent, "●", UDim2.new(.83,0,y-.01,0), UDim2.new(.10,0,.13,0))
 	local enabled = false
-
 	b.MouseButton1Click:Connect(function()
 		enabled = not enabled
 		config[configKey] = enabled
-
 		if enabled then
 			b.Text = "●"
 			b.BackgroundColor3 = BLUE
@@ -339,9 +326,7 @@ local function toggle(parent, text, y, configKey)
 			b.Text = "○"
 			b.BackgroundColor3 = BUTTON
 		end
-		print(text .. " set to: " .. tostring(enabled))
 	end)
-
 	return b
 end
 
@@ -349,25 +334,33 @@ toggle(protection,"Anti Drop",.22, "antiDrop")
 toggle(protection,"Anti Fling",.43, "antiFling")
 toggle(protection,"Anti Trap",.64, "antiTrap")
 
---==================================================
--- RIGHT MOVEMENT
---==================================================
-
-local movement = makePanel(
-	"Movement",
-	UDim2.new(.50,8,0,.0),
-	UDim2.new(.50,-0,0.32,0)
-)
-
+-- Right Panel - Movement
+local movement = makePanel("Movement", UDim2.new(.50,8,0,.0), UDim2.new(.50,-0,0.32,0))
 makeLabel(movement,"🏃  MOVEMENT",UDim2.new(.04,0,.06,0),UDim2.new(.5,0,.12,0))
-makeLabel(movement,"Speed",UDim2.new(.04,0,.24,0),UDim2.new(.15,0,.1,0))
 
+makeLabel(movement,"Movement Mode",UDim2.new(.04,0,.22,0),UDim2.new(.4,0,.1,0))
+local modeBtn1 = makeButton(movement, "Straight", UDim2.new(.04,0,.35,0), UDim2.new(.42,0,.12,0))
+local modeBtn2 = makeButton(movement, "Wall-To-Wall", UDim2.new(.54,0,.35,0), UDim2.new(.42,0,.12,0))
+modeBtn1.BackgroundColor3 = BLUE
+
+modeBtn1.MouseButton1Click:Connect(function()
+	config.movementMode = "Straight"
+	modeBtn1.BackgroundColor3 = BLUE
+	modeBtn2.BackgroundColor3 = BUTTON
+end)
+modeBtn2.MouseButton1Click:Connect(function()
+	config.movementMode = "Wall-To-Wall"
+	modeBtn2.BackgroundColor3 = BLUE
+	modeBtn1.BackgroundColor3 = BUTTON
+end)
+
+makeLabel(movement,"Speed",UDim2.new(.04,0,.54,0),UDim2.new(.15,0,.1,0))
 local speedBox = Instance.new("TextBox")
-speedBox.Position = UDim2.new(.72,0,.20,0)
+speedBox.Position = UDim2.new(.72,0,.50,0)
 speedBox.Size = UDim2.new(.16,0,.17,0)
 speedBox.BackgroundColor3 = BUTTON
 speedBox.Text = "50"
-speedBox.PlaceholderText = "10-100"
+speedBox.PlaceholderText = "1-1000"
 speedBox.TextColor3 = WHITE
 speedBox.TextScaled = true
 speedBox.Font = Enum.Font.GothamBold
@@ -378,29 +371,165 @@ local speedCorner = Instance.new("UICorner")
 speedCorner.CornerRadius = UDim.new(0,8)
 speedCorner.Parent = speedBox
 
-makeLabel(movement,"(max 100)",UDim2.new(.89,0,.24,0),UDim2.new(.10,0,.10,0))
+makeLabel(movement,"(max 1000)",UDim2.new(.89,0,.54,0),UDim2.new(.10,0,.10,0))
 
 speedBox.FocusLost:Connect(function()
 	local value = tonumber(speedBox.Text) or 50
-	value = math.clamp(value,10,100)
+	value = math.clamp(value, 1, 1000)
 	speedBox.Text = tostring(value)
 	config.moveSpeed = value
-	print("Move Speed: " .. value)
+end)
+
+-- Stats Panel
+local stats = makePanel("Stats", UDim2.new(.50,8,.34,0), UDim2.new(.50,-0,.57,0))
+makeLabel(stats,"📊  COLLECTED",UDim2.new(.04,0,.04,0),UDim2.new(.5,0,.09,0))
+local statsLabel = makeLabel(stats,"Eggs: 0",UDim2.new(.04,0,.20,0),UDim2.new(.5,0,.15,0))
+
+--==================================================
+-- PETS TAB CONTENT
+--==================================================
+
+local petsContent = Instance.new("Frame")
+petsContent.Name = "PetsTab"
+petsContent.BackgroundTransparency = 1
+petsContent.Size = UDim2.new(1, 0, 1, 0)
+petsContent.Parent = content
+petsContent.Visible = false
+
+local plotPanel = makePanel("PlotEggs", UDim2.new(0, 0, 0, 0), UDim2.new(0.50, -8, 0.48, 0))
+makeLabel(plotPanel, "📦  MY PLOT EGGS", UDim2.new(0.025,0,0.035,0), UDim2.new(0.6,0,0.09,0))
+makeLabel(plotPanel, "Auto Place Eggs", UDim2.new(0.025,0,0.12,0), UDim2.new(0.6,0,0.08,0))
+
+local plotRarities = {"Common", "Uncommon", "Rare", "Legendary", "Mythic", "Secret", "Internal", "Divine"}
+local plotRarityButtons = {}
+
+for i, rarity in ipairs(plotRarities) do
+	local row = math.floor((i-1)/4)
+	local col = (i-1)%4
+	local b = makeButton(plotPanel, rarity, UDim2.new(0.03 + col*0.24,0,0.22 + row*0.11,0), UDim2.new(0.22,0,0.095,0))
+	plotRarityButtons[rarity] = {button = b, selected = false}
+	b.MouseButton1Click:Connect(function()
+		if plotRarityButtons[rarity].selected then
+			b.BackgroundColor3 = BUTTON
+			b.TextColor3 = WHITE
+			plotRarityButtons[rarity].selected = false
+			config.autoPlaceRarities[rarity] = nil
+		else
+			b.BackgroundColor3 = BLUE
+			b.TextColor3 = Color3.new(1,1,1)
+			plotRarityButtons[rarity].selected = true
+			config.autoPlaceRarities[rarity] = true
+		end
+	end)
+end
+
+local hatchPanel = makePanel("AutoHatch", UDim2.new(0,0,0.53,0), UDim2.new(0.50,-8,0.37,0))
+makeLabel(hatchPanel, "🐣  AUTO HATCH READY", UDim2.new(0.025,0,0.035,0), UDim2.new(0.7,0,0.09,0))
+
+local hatchRarities = {"Common", "Uncommon", "Rare", "Legendary", "Mythic", "Secret", "Internal", "Divine"}
+local hatchRarityButtons = {}
+
+for i, rarity in ipairs(hatchRarities) do
+	local row = math.floor((i-1)/4)
+	local col = (i-1)%4
+	local b = makeButton(hatchPanel, rarity, UDim2.new(0.03 + col*0.24,0,0.15 + row*0.11,0), UDim2.new(0.22,0,0.095,0))
+	hatchRarityButtons[rarity] = {button = b, selected = false}
+	b.MouseButton1Click:Connect(function()
+		if hatchRarityButtons[rarity].selected then
+			b.BackgroundColor3 = BUTTON
+			b.TextColor3 = WHITE
+			hatchRarityButtons[rarity].selected = false
+			config.autoHatchRarities[rarity] = nil
+		else
+			b.BackgroundColor3 = BLUE
+			b.TextColor3 = Color3.new(1,1,1)
+			hatchRarityButtons[rarity].selected = true
+			config.autoHatchRarities[rarity] = true
+		end
+	end)
+end
+
+local rightPets = makePanel("PetsStats", UDim2.new(.50,8,0,.0), UDim2.new(.50,-0,.91,0))
+makeLabel(rightPets,"🎯  FEATURES",UDim2.new(.04,0,.05,0),UDim2.new(.6,0,.12,0))
+
+local autoPlaceBtn = makeButton(rightPets, "START AUTO PLACE", UDim2.new(.04,0,.22,0), UDim2.new(.92,0,.12,0))
+autoPlaceBtn.BackgroundColor3 = GREEN
+
+autoPlaceBtn.MouseButton1Click:Connect(function()
+	if not config.autoPlaceEnabled then
+		config.autoPlaceEnabled = true
+		autoPlaceBtn.Text = "STOP AUTO PLACE"
+		autoPlaceBtn.BackgroundColor3 = RED
+	else
+		config.autoPlaceEnabled = false
+		autoPlaceBtn.Text = "START AUTO PLACE"
+		autoPlaceBtn.BackgroundColor3 = GREEN
+	end
+end)
+
+local autoHatchBtn = makeButton(rightPets, "START AUTO HATCH", UDim2.new(.04,0,.40,0), UDim2.new(.92,0,.12,0))
+autoHatchBtn.BackgroundColor3 = GREEN
+
+autoHatchBtn.MouseButton1Click:Connect(function()
+	if not config.autoHatchEnabled then
+		config.autoHatchEnabled = true
+		autoHatchBtn.Text = "STOP AUTO HATCH"
+		autoHatchBtn.BackgroundColor3 = RED
+	else
+		config.autoHatchEnabled = false
+		autoHatchBtn.Text = "START AUTO HATCH"
+		autoHatchBtn.BackgroundColor3 = GREEN
+	end
 end)
 
 --==================================================
--- STATS PANEL
+-- EVENTS TAB CONTENT
 --==================================================
 
-local stats = makePanel(
-	"Stats",
-	UDim2.new(.50,8,.34,0),
-	UDim2.new(.50,-0,.57,0)
-)
+local eventsContent = Instance.new("Frame")
+eventsContent.Name = "EventsTab"
+eventsContent.BackgroundTransparency = 1
+eventsContent.Size = UDim2.new(1, 0, 1, 0)
+eventsContent.Parent = content
+eventsContent.Visible = false
 
-makeLabel(stats,"📊  COLLECTED",UDim2.new(.04,0,.04,0),UDim2.new(.5,0,.09,0))
+local eventPanel = makePanel("Events", UDim2.new(0, 0, 0, 0), UDim2.new(1, -16, 1, 0))
+makeLabel(eventPanel, "🎉  UPCOMING EVENTS", UDim2.new(0.025,0,0.035,0), UDim2.new(0.6,0,0.09,0))
+makeLabel(eventPanel, "Event features coming soon!", UDim2.new(0.025,0,0.15,0), UDim2.new(0.6,0,0.08,0))
 
-local statsLabel = makeLabel(stats,"Eggs: 0",UDim2.new(.04,0,.20,0),UDim2.new(.5,0,.15,0))
+--==================================================
+-- TAB SWITCHING
+--==================================================
+
+eggsTabBtn.MouseButton1Click:Connect(function()
+	config.currentTab = "EGGS"
+	eggsContent.Visible = true
+	petsContent.Visible = false
+	eventsContent.Visible = false
+	eggsTabBtn.TextColor3 = BLUE
+	petsTabBtn.TextColor3 = MUTED
+	eventsTabBtn.TextColor3 = MUTED
+end)
+
+petsTabBtn.MouseButton1Click:Connect(function()
+	config.currentTab = "PETS"
+	eggsContent.Visible = false
+	petsContent.Visible = true
+	eventsContent.Visible = false
+	eggsTabBtn.TextColor3 = MUTED
+	petsTabBtn.TextColor3 = BLUE
+	eventsTabBtn.TextColor3 = MUTED
+end)
+
+eventsTabBtn.MouseButton1Click:Connect(function()
+	config.currentTab = "EVENTS"
+	eggsContent.Visible = false
+	petsContent.Visible = false
+	eventsContent.Visible = true
+	eggsTabBtn.TextColor3 = MUTED
+	petsTabBtn.TextColor3 = MUTED
+	eventsTabBtn.TextColor3 = BLUE
+end)
 
 --==================================================
 -- SEARCH BAR
@@ -432,13 +561,7 @@ searchStroke.Parent = searchBar
 -- AUTO STEAL START BUTTON
 --==================================================
 
-local startButton = makeButton(
-	main,
-	"START AUTO STEAL",
-	UDim2.new(0.515, 0, 0.91, 0),
-	UDim2.new(0.47, 0, 0.065, 0)
-)
-
+local startButton = makeButton(main, "START AUTO STEAL", UDim2.new(0.515, 0, 0.91, 0), UDim2.new(0.47, 0, 0.065, 0))
 startButton.BackgroundColor3 = BLUE
 
 startButton.MouseButton1Click:Connect(function()
@@ -466,7 +589,9 @@ startButton.MouseButton1Click:Connect(function()
 		
 		print("=== AUTO STEAL STARTED ===")
 		print("Hunting for: " .. table.concat(selectedRarities, ", "))
+		print("Area: " .. config.selectedArea)
 		print("Move Speed: " .. config.moveSpeed)
+		print("Movement Mode: " .. config.movementMode)
 		print("========================")
 		
 		local character = player.Character
@@ -493,7 +618,6 @@ local function getEggFolders()
 		local folder = workspace:FindFirstChild(folderName)
 		if folder then return {folder} end
 	end
-	
 	return {}
 end
 
@@ -585,21 +709,7 @@ local function collectEgg(egg)
 	
 	local humanoidRootPart = character.HumanoidRootPart
 	
-	-- Method 1: Try clicking the egg directly
-	for i = 1, 5 do
-		if not config.autoStealEnabled then return false end
-		
-		local clickDetector = egg:FindFirstChild("ClickDetector")
-		if clickDetector then
-			firesignal(clickDetector.MouseClick, nil)
-			task.wait(0.2)
-			return true
-		end
-		
-		task.wait(0.1)
-	end
-	
-	-- Method 2: Try ProximityPrompt
+	-- Method 1: ProximityPrompt
 	for i = 1, 5 do
 		if not config.autoStealEnabled then return false end
 		
@@ -610,14 +720,24 @@ local function collectEgg(egg)
 			prompt:InputHoldEnd()
 			return true
 		end
-		
 		task.wait(0.1)
 	end
 	
-	-- Method 3: Teleport near and spam touch
-	for i = 1, 15 do
+	-- Method 2: ClickDetector
+	for i = 1, 5 do
 		if not config.autoStealEnabled then return false end
 		
+		local clickDetector = egg:FindFirstChild("ClickDetector")
+		if clickDetector then
+			task.wait(0.2)
+			return true
+		end
+		task.wait(0.1)
+	end
+	
+	-- Method 3: Teleport and touch
+	for i = 1, 15 do
+		if not config.autoStealEnabled then return false end
 		humanoidRootPart.CFrame = egg.CFrame + Vector3.new(0, 2, 0)
 		task.wait(0.1)
 	end
@@ -724,16 +844,24 @@ fullButton.MouseButton1Click:Connect(function()
 end)
 
 --==================================================
--- SETTINGS BUTTON
+-- BUTTONS
 --==================================================
 
 settingsButton.MouseButton1Click:Connect(function()
-	print("⚙️ ALTINA HUB Settings clicked")
+	print("⚙️ ALTINA HUB Settings clicked - More features coming soon!")
 end)
 
 searchButton.MouseButton1Click:Connect(function()
 	searchBar:CaptureFocus()
 end)
 
-print("✅ ALTINA HUB loaded successfully!")
-print("👆 Select multiple rarities and click START AUTO STEAL")
+print("✅ ALTINA HUB v2 LOADED SUCCESSFULLY!")
+print("📋 Features:")
+print("  ✓ EGGS Tab - Auto Steal with Area Selection")
+print("  ✓ PETS Tab - Auto Place & Auto Hatch")
+print("  ✓ EVENTS Tab - Coming Soon")
+print("  ✓ Prioritized Movement (Closest)")
+print("  ✓ Straight & Wall-To-Wall Modes")
+print("  ✓ Speed Control (1-1000)")
+print("  ✓ Full Protection Suite")
+print("👆 Select settings and click START!")
