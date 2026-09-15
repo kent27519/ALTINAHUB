@@ -1,997 +1,124 @@
---// ALTINA HUB - ULTIMATE EGG STEALER v3 WITH EGG LIST
---// Roblox Studio LocalScript
---// Place in StarterPlayer > StarterPlayerScripts
-
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "AltinaHub"
+gui.Name = "AltinaGUI"
 gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
 gui.Parent = player:WaitForChild("PlayerGui")
 
---==================================================
--- COLORS
---==================================================
-
-local BG = Color3.fromRGB(5, 17, 30)
-local PANEL = Color3.fromRGB(7, 24, 40)
-local BUTTON = Color3.fromRGB(10, 31, 51)
-local BLUE = Color3.fromRGB(0, 174, 255)
-local WHITE = Color3.fromRGB(225, 238, 255)
-local MUTED = Color3.fromRGB(130, 160, 195)
-local RED = Color3.fromRGB(200, 50, 50)
-local GREEN = Color3.fromRGB(50, 200, 50)
-local GOLD = Color3.fromRGB(255, 215, 0)
-
---==================================================
--- STATE MANAGEMENT
---==================================================
-
-local config = {
-	autoStealEnabled = false,
-	selectedRarities = {},
-	selectedAreas = {["All"] = true},
-	selectedMutations = {},
-	priorityMode = "Closest",
-	moveSpeed = 50,
-	movementMode = "Straight",
-	spawnPoint = nil,
-	collectedCount = 0,
-	eggStats = {},
-	currentTab = "EGGS",
-	
-	-- Plot Eggs Config
-	autoPlaceEnabled = false,
-	autoPlaceRarities = {},
-	autoPlaceMutations = {},
-	
-	-- Auto Hatch Config
-	autoHatchEnabled = false,
-	autoHatchRarities = {},
-	
-	-- Protection
-	antiDrop = false,
-	antiFling = false,
-	antiTrap = false,
-	
-	-- Egg List
-	foundEggs = {},
-	selectedEggToSteal = nil
-}
-
---==================================================
--- MAIN
---==================================================
-
-local main = Instance.new("Frame")
-main.Name = "Main"
-main.Size = UDim2.new(0.94, 0, 0.91, 0)
-main.Position = UDim2.new(0.03, 0, 0.045, 0)
-main.BackgroundColor3 = BG
-main.BorderSizePixel = 0
-main.Parent = gui
+-- Main frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.fromOffset(220, 170)
+frame.Position = UDim2.new(0, 20, 0.5, -85)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BorderSizePixel = 0
+frame.Parent = gui
 
 local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 16)
-corner.Parent = main
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
 
-local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(15, 80, 120)
-stroke.Thickness = 2
-stroke.Parent = main
-
---==================================================
--- HEADER
---==================================================
-
-local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0.115, 0)
-header.BackgroundColor3 = Color3.fromRGB(4, 15, 27)
-header.BorderSizePixel = 0
-header.Parent = main
-
+-- Title
 local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
 title.BackgroundTransparency = 1
-title.Position = UDim2.new(0.025, 0, 0.08, 0)
-title.Size = UDim2.new(0.32, 0, 0.5, 0)
+title.Text = "ALTINA"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 20
 title.Font = Enum.Font.GothamBold
-title.Text = "ΛLTINA HUB"
-title.TextColor3 = WHITE
-title.TextScaled = true
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = header
+title.Parent = frame
 
-local titleStroke = Instance.new("UIStroke")
-titleStroke.Color = BLUE
-titleStroke.Thickness = 0.8
-titleStroke.Parent = title
+-- Speed button
+local speedButton = Instance.new("TextButton")
+speedButton.Size = UDim2.new(1, -20, 0, 35)
+speedButton.Position = UDim2.fromOffset(10, 45)
+speedButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+speedButton.TextColor3 = Color3.new(1, 1, 1)
+speedButton.Text = "Speed: 16"
+speedButton.TextSize = 14
+speedButton.Font = Enum.Font.Gotham
+speedButton.Parent = frame
 
---==================================================
--- TAB BUTTONS
---==================================================
+local speed = 16
 
-local function createTabButton(text, position)
-	local b = Instance.new("TextButton")
-	b.BackgroundTransparency = 1
-	b.Position = position
-	b.Size = UDim2.new(0.12, 0, 0.5, 0)
-	b.Font = Enum.Font.GothamBold
-	b.Text = text
-	b.TextColor3 = MUTED
-	b.TextScaled = true
-	b.Parent = header
-	return b
-end
+speedButton.MouseButton1Click:Connect(function()
+	speed += 10
 
-local eggsTabBtn = createTabButton("🥚  EGGS", UDim2.new(0.35, 0, 0.1, 0))
-local petsTabBtn = createTabButton("🐾  PETS", UDim2.new(0.48, 0, 0.1, 0))
-local eventsTabBtn = createTabButton("🎉  EVENTS", UDim2.new(0.61, 0, 0.1, 0))
-
-eggsTabBtn.TextColor3 = BLUE
-
-local discord = Instance.new("TextLabel")
-discord.BackgroundTransparency = 1
-discord.Position = UDim2.new(0.72, 0, 0.07, 0)
-discord.Size = UDim2.new(0.20, 0, 0.65, 0)
-discord.Font = Enum.Font.GothamBold
-discord.Text = "JOIN: discord.gg/dVJXXGfU6J"
-discord.TextColor3 = WHITE
-discord.TextScaled = true
-discord.TextXAlignment = Enum.TextXAlignment.Left
-discord.Parent = header
-
---==================================================
--- HEADER BUTTONS
---==================================================
-
-local function headerButton(text, position)
-	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(0.045, 0, 0.65, 0)
-	b.Position = position
-	b.BackgroundTransparency = 1
-	b.Text = text
-	b.TextColor3 = WHITE
-	b.TextScaled = true
-	b.Font = Enum.Font.GothamBold
-	b.Parent = header
-	return b
-end
-
-local settingsButton = headerButton("⚙", UDim2.new(0.80, 0, 0.18, 0))
-local searchButton = headerButton("⌕", UDim2.new(0.855, 0, 0.18, 0))
-local fullButton = headerButton("⛶", UDim2.new(0.905, 0, 0.18, 0))
-local closeButton = headerButton("✕", UDim2.new(0.95, 0, 0.18, 0))
-
---==================================================
--- CONTENT
---==================================================
-
-local content = Instance.new("Frame")
-content.BackgroundTransparency = 1
-content.Position = UDim2.new(0.015, 0, 0.13, 0)
-content.Size = UDim2.new(0.97, 0, 0.77, 0)
-content.Parent = main
-
---==================================================
--- PANEL FUNCTION
---==================================================
-
-local function makePanel(name, pos, size)
-	local p = Instance.new("Frame")
-	p.Name = name
-	p.Position = pos
-	p.Size = size
-	p.BackgroundColor3 = PANEL
-	p.BorderSizePixel = 0
-	p.Parent = content
-
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, 10)
-	c.Parent = p
-
-	local s = Instance.new("UIStroke")
-	s.Color = Color3.fromRGB(13, 53, 80)
-	s.Thickness = 1
-	s.Parent = p
-
-	return p
-end
-
---==================================================
--- BUTTON & LABEL FUNCTIONS
---==================================================
-
-local function makeButton(parent, text, pos, size)
-	local b = Instance.new("TextButton")
-	b.Position = pos
-	b.Size = size
-	b.BackgroundColor3 = BUTTON
-	b.BorderSizePixel = 0
-	b.Text = text
-	b.TextColor3 = WHITE
-	b.TextScaled = true
-	b.Font = Enum.Font.GothamBold
-	b.AutoButtonColor = true
-	b.Parent = parent
-
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, 9)
-	c.Parent = b
-
-	local s = Instance.new("UIStroke")
-	s.Color = Color3.fromRGB(28, 72, 105)
-	s.Thickness = 1
-	s.Parent = b
-
-	return b
-end
-
-local function makeLabel(parent, text, pos, size)
-	local l = Instance.new("TextLabel")
-	l.BackgroundTransparency = 1
-	l.Position = pos
-	l.Size = size
-	l.Text = text
-	l.TextColor3 = WHITE
-	l.TextScaled = true
-	l.Font = Enum.Font.GothamBold
-	l.TextXAlignment = Enum.TextXAlignment.Left
-	l.Parent = parent
-	return l
-end
-
---==================================================
--- EGGS TAB CONTENT
---==================================================
-
-local eggsContent = Instance.new("Frame")
-eggsContent.Name = "EggsTab"
-eggsContent.BackgroundTransparency = 1
-eggsContent.Size = UDim2.new(1, 0, 1, 0)
-eggsContent.Parent = content
-eggsContent.Visible = true
-
--- Left Panel - Auto Steal
-local leftTop = makePanel("AutoSteal", UDim2.new(0, 0, 0, 0), UDim2.new(0.50, -8, 0.51, 0))
-
-makeLabel(leftTop, "🥚  AUTO STEAL EGGS", UDim2.new(0.025,0,0.035,0), UDim2.new(0.6,0,0.09,0))
-makeLabel(leftTop, "Select Rarities", UDim2.new(0.025,0,0.12,0), UDim2.new(0.6,0,0.08,0))
-
-local rarities = {"Common", "Uncommon", "Rare", "Legendary", "Mythic", "Secret", "Internal", "Divine"}
-local rarityButtons = {}
-
-for i, rarity in ipairs(rarities) do
-	local row = math.floor((i-1)/4)
-	local col = (i-1)%4
-	local b = makeButton(leftTop, rarity, UDim2.new(0.03 + col*0.24,0,0.22 + row*0.11,0), UDim2.new(0.22,0,0.095,0))
-	rarityButtons[rarity] = {button = b, selected = false}
-	b.MouseButton1Click:Connect(function()
-		if rarityButtons[rarity].selected then
-			b.BackgroundColor3 = BUTTON
-			b.TextColor3 = WHITE
-			rarityButtons[rarity].selected = false
-			config.selectedRarities[rarity] = nil
-		else
-			b.BackgroundColor3 = BLUE
-			b.TextColor3 = Color3.new(1,1,1)
-			rarityButtons[rarity].selected = true
-			config.selectedRarities[rarity] = true
-		end
-	end)
-end
-
-makeLabel(leftTop, "Areas", UDim2.new(0.025,0,0.59,0), UDim2.new(0.15,0,0.08,0))
-
-local areas = {"All", "Forest", "Lake", "Desert", "Jungle", "Snow", "Volcano", "Abyss"}
-local areaButtons = {}
-
-for i, area in ipairs(areas) do
-	local row = i <= 4 and 0 or 1
-	local col = (i-1) % 4
-	local b = makeButton(leftTop, area, UDim2.new(0.03 + col*0.24,0,0.68 + row*0.11,0), UDim2.new(0.22,0,0.095,0))
-	areaButtons[area] = {button = b, selected = (area == "All")}
-	if area == "All" then
-		b.BackgroundColor3 = BLUE
-		b.TextColor3 = Color3.new(1,1,1)
+	if speed > 100 then
+		speed = 16
 	end
-	b.MouseButton1Click:Connect(function()
-		for a, data in pairs(areaButtons) do
-			data.button.BackgroundColor3 = BUTTON
-			data.button.TextColor3 = WHITE
-			data.selected = false
-		end
-		b.BackgroundColor3 = BLUE
-		b.TextColor3 = Color3.new(1,1,1)
-		areaButtons[area].selected = true
-		config.selectedAreas = {[area] = true}
-	end)
-end
 
--- Right Panel - Protection
-local protection = makePanel("Protection", UDim2.new(0,0,0.535,0), UDim2.new(0.50,-8,0.38,0))
-makeLabel(protection,"🛡  PROTECTION",UDim2.new(.025,0,.05,0),UDim2.new(.5,0,.1,0))
+	speedButton.Text = "Speed: " .. speed
 
-local function toggle(parent, text, y, configKey)
-	local label = makeLabel(parent, text, UDim2.new(.025,0,y,0), UDim2.new(.55,0,.13,0))
-	local b = makeButton(parent, "●", UDim2.new(.83,0,y-.01,0), UDim2.new(.10,0,.13,0))
-	local enabled = false
-	b.MouseButton1Click:Connect(function()
-		enabled = not enabled
-		config[configKey] = enabled
-		if enabled then
-			b.Text = "●"
-			b.BackgroundColor3 = BLUE
-		else
-			b.Text = "○"
-			b.BackgroundColor3 = BUTTON
-		end
-	end)
-	return b
-end
-
-toggle(protection,"Anti Drop",.22, "antiDrop")
-toggle(protection,"Anti Fling",.43, "antiFling")
-toggle(protection,"Anti Trap",.64, "antiTrap")
-
--- Right Panel - Movement
-local movement = makePanel("Movement", UDim2.new(.50,8,0,.0), UDim2.new(.50,-0,0.32,0))
-makeLabel(movement,"🏃  MOVEMENT",UDim2.new(.04,0,.06,0),UDim2.new(.5,0,.12,0))
-
-makeLabel(movement,"Movement Mode",UDim2.new(.04,0,.22,0),UDim2.new(.4,0,.1,0))
-local modeBtn1 = makeButton(movement, "Straight", UDim2.new(.04,0,.35,0), UDim2.new(.42,0,.12,0))
-local modeBtn2 = makeButton(movement, "Wall-To-Wall", UDim2.new(.54,0,.35,0), UDim2.new(.42,0,.12,0))
-modeBtn1.BackgroundColor3 = BLUE
-
-modeBtn1.MouseButton1Click:Connect(function()
-	config.movementMode = "Straight"
-	modeBtn1.BackgroundColor3 = BLUE
-	modeBtn2.BackgroundColor3 = BUTTON
-end)
-modeBtn2.MouseButton1Click:Connect(function()
-	config.movementMode = "Wall-To-Wall"
-	modeBtn2.BackgroundColor3 = BLUE
-	modeBtn1.BackgroundColor3 = BUTTON
-end)
-
-makeLabel(movement,"Speed",UDim2.new(.04,0,.54,0),UDim2.new(.15,0,.1,0))
-local speedBox = Instance.new("TextBox")
-speedBox.Position = UDim2.new(.72,0,.50,0)
-speedBox.Size = UDim2.new(.16,0,.17,0)
-speedBox.BackgroundColor3 = BUTTON
-speedBox.Text = "50"
-speedBox.PlaceholderText = "1-1000"
-speedBox.TextColor3 = WHITE
-speedBox.TextScaled = true
-speedBox.Font = Enum.Font.GothamBold
-speedBox.ClearTextOnFocus = false
-speedBox.Parent = movement
-
-local speedCorner = Instance.new("UICorner")
-speedCorner.CornerRadius = UDim.new(0,8)
-speedCorner.Parent = speedBox
-
-makeLabel(movement,"(max 1000)",UDim2.new(.89,0,.54,0),UDim2.new(.10,0,.10,0))
-
-speedBox.FocusLost:Connect(function()
-	local value = tonumber(speedBox.Text) or 50
-	value = math.clamp(value, 1, 1000)
-	speedBox.Text = tostring(value)
-	config.moveSpeed = value
-end)
-
--- Stats Panel
-local stats = makePanel("Stats", UDim2.new(.50,8,.34,0), UDim2.new(.50,-0,.57,0))
-makeLabel(stats,"📊  COLLECTED",UDim2.new(.04,0,.04,0),UDim2.new(.5,0,.09,0))
-local statsLabel = makeLabel(stats,"Eggs: 0",UDim2.new(.04,0,.20,0),UDim2.new(.5,0,.15,0))
-
---==================================================
--- EGG LIST PANEL
---==================================================
-
-local eggListPanel = makePanel("EggList", UDim2.new(0, 0, 0.53, 0), UDim2.new(1, -16, 0.46, 0))
-makeLabel(eggListPanel, "📍 NEARBY EGGS", UDim2.new(0.025,0,0.02,0), UDim2.new(0.5,0,0.08,0))
-
-local eggListFrame = Instance.new("Frame")
-eggListFrame.BackgroundTransparency = 1
-eggListFrame.Position = UDim2.new(0.01, 0, 0.12, 0)
-eggListFrame.Size = UDim2.new(0.98, 0, 0.86, 0)
-eggListFrame.Parent = eggListPanel
-
-local listScroll = Instance.new("ScrollingFrame")
-listScroll.BackgroundTransparency = 1
-listScroll.Position = UDim2.new(0, 0, 0, 0)
-listScroll.Size = UDim2.new(1, 0, 1, 0)
-listScroll.ScrollBarThickness = 8
-listScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-listScroll.Parent = eggListFrame
-
-local function refreshEggList()
-	for _, child in ipairs(listScroll:GetChildren()) do
-		child:Destroy()
-	end
-	
-	local workspace = game:GetService("Workspace")
-	local folderNames = {"Eggs", "eggs", "EggSpawns", "eggSpawns", "Items", "items"}
-	local eggs = {}
-	
-	for _, folderName in ipairs(folderNames) do
-		local folder = workspace:FindFirstChild(folderName)
-		if folder then
-			for _, egg in pairs(folder:GetChildren()) do
-				local eggName = egg.Name:lower()
-				
-				-- Check if rarity matches
-				local rarityMatch = false
-				for rarity in pairs(config.selectedRarities) do
-					if eggName:find(rarity:lower()) then
-						rarityMatch = true
-						break
-					end
-				end
-				
-				if rarityMatch then
-					local eggPos = egg:IsA("BasePart") and egg.Position or (egg:FindFirstChild("PrimaryPart") and egg.PrimaryPart.Position)
-					if eggPos and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-						local distance = (eggPos - player.Character.HumanoidRootPart.Position).Magnitude
-						table.insert(eggs, {name = egg.Name, instance = egg, distance = distance, position = eggPos})
-					end
-				end
-			end
-		end
-	end
-	
-	table.sort(eggs, function(a, b) return a.distance < b.distance end)
-	
-	local yPos = 0
-	for i, eggData in ipairs(eggs) do
-		local eggButton = Instance.new("TextButton")
-		eggButton.BackgroundColor3 = BUTTON
-		eggButton.BorderSizePixel = 0
-		eggButton.Position = UDim2.new(0, 0, 0, yPos)
-		eggButton.Size = UDim2.new(1, -8, 0, 35)
-		eggButton.Text = eggData.name .. " (" .. math.floor(eggData.distance) .. "m)"
-		eggButton.TextColor3 = WHITE
-		eggButton.TextScaled = true
-		eggButton.Font = Enum.Font.GothamBold
-		eggButton.Parent = listScroll
-		
-		local eggCorner = Instance.new("UICorner")
-		eggCorner.CornerRadius = UDim.new(0, 6)
-		eggCorner.Parent = eggButton
-		
-		eggButton.MouseButton1Click:Connect(function()
-			config.selectedEggToSteal = eggData.instance
-			eggButton.BackgroundColor3 = BLUE
-		end)
-		
-		yPos = yPos + 40
-	end
-	
-	listScroll.CanvasSize = UDim2.new(0, 0, 0, yPos)
-end
-
--- Auto refresh egg list every 2 seconds
-task.spawn(function()
-	while true do
-		if config.autoStealEnabled then
-			refreshEggList()
-		end
-		task.wait(2)
-	end
-end)
-
---==================================================
--- PETS TAB CONTENT
---==================================================
-
-local petsContent = Instance.new("Frame")
-petsContent.Name = "PetsTab"
-petsContent.BackgroundTransparency = 1
-petsContent.Size = UDim2.new(1, 0, 1, 0)
-petsContent.Parent = content
-petsContent.Visible = false
-
-local plotPanel = makePanel("PlotEggs", UDim2.new(0, 0, 0, 0), UDim2.new(0.50, -8, 0.48, 0))
-makeLabel(plotPanel, "📦  AUTO PLACE EGGS", UDim2.new(0.025,0,0.035,0), UDim2.new(0.6,0,0.09,0))
-makeLabel(plotPanel, "Select Rarities", UDim2.new(0.025,0,0.12,0), UDim2.new(0.6,0,0.08,0))
-
-local plotRarities = {"Common", "Uncommon", "Rare", "Legendary", "Mythic", "Secret", "Internal", "Divine"}
-local plotRarityButtons = {}
-
-for i, rarity in ipairs(plotRarities) do
-	local row = math.floor((i-1)/4)
-	local col = (i-1)%4
-	local b = makeButton(plotPanel, rarity, UDim2.new(0.03 + col*0.24,0,0.22 + row*0.11,0), UDim2.new(0.22,0,0.095,0))
-	plotRarityButtons[rarity] = {button = b, selected = false}
-	b.MouseButton1Click:Connect(function()
-		if plotRarityButtons[rarity].selected then
-			b.BackgroundColor3 = BUTTON
-			b.TextColor3 = WHITE
-			plotRarityButtons[rarity].selected = false
-			config.autoPlaceRarities[rarity] = nil
-		else
-			b.BackgroundColor3 = BLUE
-			b.TextColor3 = Color3.new(1,1,1)
-			plotRarityButtons[rarity].selected = true
-			config.autoPlaceRarities[rarity] = true
-		end
-	end)
-end
-
-makeLabel(plotPanel, "Mutations", UDim2.new(0.025,0,0.59,0), UDim2.new(0.2,0,0.08,0))
-
-local plotMutations = {"Rainbow","Gold","Silver"}
-local plotMutationButtons = {}
-
-for i, mutation in ipairs(plotMutations) do
-	local b = makeButton(plotPanel, mutation, UDim2.new(0.03+(i-1)*0.32,0,0.69,0), UDim2.new(0.28,0,0.11,0))
-	plotMutationButtons[mutation] = {button = b, selected = false}
-	b.MouseButton1Click:Connect(function()
-		if plotMutationButtons[mutation].selected then
-			b.BackgroundColor3 = BUTTON
-			b.TextColor3 = WHITE
-			plotMutationButtons[mutation].selected = false
-			config.autoPlaceMutations[mutation] = nil
-		else
-			b.BackgroundColor3 = BLUE
-			b.TextColor3 = Color3.new(1,1,1)
-			plotMutationButtons[mutation].selected = true
-			config.autoPlaceMutations[mutation] = true
-		end
-	end)
-end
-
-local hatchPanel = makePanel("AutoHatch", UDim2.new(0,0,0.53,0), UDim2.new(0.50,-8,0.37,0))
-makeLabel(hatchPanel, "🐣  AUTO HATCH READY", UDim2.new(0.025,0,0.035,0), UDim2.new(0.7,0,0.09,0))
-
-local hatchRarities = {"Common", "Uncommon", "Rare", "Legendary", "Mythic", "Secret", "Internal", "Divine"}
-local hatchRarityButtons = {}
-
-for i, rarity in ipairs(hatchRarities) do
-	local row = math.floor((i-1)/4)
-	local col = (i-1)%4
-	local b = makeButton(hatchPanel, rarity, UDim2.new(0.03 + col*0.24,0,0.15 + row*0.11,0), UDim2.new(0.22,0,0.095,0))
-	hatchRarityButtons[rarity] = {button = b, selected = false}
-	b.MouseButton1Click:Connect(function()
-		if hatchRarityButtons[rarity].selected then
-			b.BackgroundColor3 = BUTTON
-			b.TextColor3 = WHITE
-			hatchRarityButtons[rarity].selected = false
-			config.autoHatchRarities[rarity] = nil
-		else
-			b.BackgroundColor3 = BLUE
-			b.TextColor3 = Color3.new(1,1,1)
-			hatchRarityButtons[rarity].selected = true
-			config.autoHatchRarities[rarity] = true
-		end
-	end)
-end
-
-local rightPets = makePanel("PetsStats", UDim2.new(.50,8,0,.0), UDim2.new(.50,-0,.91,0))
-makeLabel(rightPets,"🎯  FEATURES",UDim2.new(.04,0,.05,0),UDim2.new(.6,0,.12,0))
-
-local autoPlaceBtn = makeButton(rightPets, "START AUTO PLACE", UDim2.new(.04,0,.22,0), UDim2.new(.92,0,.12,0))
-autoPlaceBtn.BackgroundColor3 = GREEN
-
-autoPlaceBtn.MouseButton1Click:Connect(function()
-	if not config.autoPlaceEnabled then
-		config.autoPlaceEnabled = true
-		autoPlaceBtn.Text = "STOP AUTO PLACE"
-		autoPlaceBtn.BackgroundColor3 = RED
-		print("✅ Auto Place Started!")
-	else
-		config.autoPlaceEnabled = false
-		autoPlaceBtn.Text = "START AUTO PLACE"
-		autoPlaceBtn.BackgroundColor3 = GREEN
-		print("❌ Auto Place Stopped!")
-	end
-end)
-
-local autoHatchBtn = makeButton(rightPets, "START AUTO HATCH", UDim2.new(.04,0,.40,0), UDim2.new(.92,0,.12,0))
-autoHatchBtn.BackgroundColor3 = GREEN
-
-autoHatchBtn.MouseButton1Click:Connect(function()
-	if not config.autoHatchEnabled then
-		config.autoHatchEnabled = true
-		autoHatchBtn.Text = "STOP AUTO HATCH"
-		autoHatchBtn.BackgroundColor3 = RED
-		print("✅ Auto Hatch Started!")
-	else
-		config.autoHatchEnabled = false
-		autoHatchBtn.Text = "START AUTO HATCH"
-		autoHatchBtn.BackgroundColor3 = GREEN
-		print("❌ Auto Hatch Stopped!")
-	end
-end)
-
---==================================================
--- EVENTS TAB CONTENT
---==================================================
-
-local eventsContent = Instance.new("Frame")
-eventsContent.Name = "EventsTab"
-eventsContent.BackgroundTransparency = 1
-eventsContent.Size = UDim2.new(1, 0, 1, 0)
-eventsContent.Parent = content
-eventsContent.Visible = false
-
-local eventPanel = makePanel("Events", UDim2.new(0, 0, 0, 0), UDim2.new(1, -16, 1, 0))
-makeLabel(eventPanel, "🎉  UPCOMING EVENTS", UDim2.new(0.025,0,0.035,0), UDim2.new(0.6,0,0.09,0))
-makeLabel(eventPanel, "Event features coming soon!", UDim2.new(0.025,0,0.15,0), UDim2.new(0.6,0,0.08,0))
-
---==================================================
--- TAB SWITCHING
---==================================================
-
-eggsTabBtn.MouseButton1Click:Connect(function()
-	config.currentTab = "EGGS"
-	eggsContent.Visible = true
-	petsContent.Visible = false
-	eventsContent.Visible = false
-	eggsTabBtn.TextColor3 = BLUE
-	petsTabBtn.TextColor3 = MUTED
-	eventsTabBtn.TextColor3 = MUTED
-end)
-
-petsTabBtn.MouseButton1Click:Connect(function()
-	config.currentTab = "PETS"
-	eggsContent.Visible = false
-	petsContent.Visible = true
-	eventsContent.Visible = false
-	eggsTabBtn.TextColor3 = MUTED
-	petsTabBtn.TextColor3 = BLUE
-	eventsTabBtn.TextColor3 = MUTED
-end)
-
-eventsTabBtn.MouseButton1Click:Connect(function()
-	config.currentTab = "EVENTS"
-	eggsContent.Visible = false
-	petsContent.Visible = false
-	eventsContent.Visible = true
-	eggsTabBtn.TextColor3 = MUTED
-	petsTabBtn.TextColor3 = MUTED
-	eventsTabBtn.TextColor3 = BLUE
-end)
-
---==================================================
--- SEARCH BAR
---==================================================
-
-local searchBar = Instance.new("TextBox")
-searchBar.Position = UDim2.new(.015,0,.91,0)
-searchBar.Size = UDim2.new(0.47,0,.065,0)
-searchBar.BackgroundColor3 = PANEL
-searchBar.BorderSizePixel = 0
-searchBar.Text = ""
-searchBar.PlaceholderText = "🔍  Search..."
-searchBar.PlaceholderColor3 = MUTED
-searchBar.TextColor3 = WHITE
-searchBar.TextScaled = true
-searchBar.Font = Enum.Font.GothamBold
-searchBar.ClearTextOnFocus = false
-searchBar.Parent = main
-
-local searchCorner = Instance.new("UICorner")
-searchCorner.CornerRadius = UDim.new(0,9)
-searchCorner.Parent = searchBar
-
-local searchStroke = Instance.new("UIStroke")
-searchStroke.Color = Color3.fromRGB(13,53,80)
-searchStroke.Parent = searchBar
-
---==================================================
--- AUTO STEAL START BUTTON
---==================================================
-
-local startButton = makeButton(main, "START AUTO STEAL", UDim2.new(0.515, 0, 0.91, 0), UDim2.new(0.47, 0, 0.065, 0))
-startButton.BackgroundColor3 = BLUE
-
-startButton.MouseButton1Click:Connect(function()
-	if not config.autoStealEnabled then
-		local hasSelection = false
-		for _ in pairs(config.selectedRarities) do
-			hasSelection = true
-			break
-		end
-		
-		if not hasSelection then
-			print("❌ Please select at least one rarity!")
-			return
-		end
-		
-		config.autoStealEnabled = true
-		startButton.Text = "STOP AUTO STEAL"
-		startButton.BackgroundColor3 = RED
-		config.collectedCount = 0
-		
-		local selectedRarities = {}
-		for rarity in pairs(config.selectedRarities) do
-			table.insert(selectedRarities, rarity)
-		end
-		
-		print("=== AUTO STEAL STARTED ===")
-		print("Hunting for: " .. table.concat(selectedRarities, ", "))
-		print("Area: Forest, Lake, Desert, Jungle, Snow, Volcano, Abyss")
-		print("Move Speed: " .. config.moveSpeed)
-		print("Movement Mode: " .. config.movementMode)
-		print("========================")
-		
-		local character = player.Character
-		if character and character:FindFirstChild("HumanoidRootPart") then
-			config.spawnPoint = character.HumanoidRootPart.CFrame
-		end
-	else
-		config.autoStealEnabled = false
-		startButton.Text = "START AUTO STEAL"
-		startButton.BackgroundColor3 = BLUE
-		print("❌ Auto steal stopped")
-	end
-end)
-
---==================================================
--- EGG FINDING & STEALING LOGIC
---==================================================
-
-local function getEggFolders()
-	local workspace = game:GetService("Workspace")
-	local folderNames = {"Eggs", "eggs", "EggSpawns", "eggSpawns", "Items", "items"}
-	
-	for _, folderName in ipairs(folderNames) do
-		local folder = workspace:FindFirstChild(folderName)
-		if folder then return {folder} end
-	end
-	return {}
-end
-
-local function findEggByRarity()
-	local selectedRarities = {}
-	for rarity in pairs(config.selectedRarities) do
-		table.insert(selectedRarities, rarity:lower())
-	end
-	
-	if #selectedRarities == 0 then return nil end
-	
-	local eggFolders = getEggFolders()
-	if #eggFolders == 0 then return nil end
-	
 	local character = player.Character
-	if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
-	
-	local playerPos = character.HumanoidRootPart.Position
-	local closestEgg = nil
-	local closestDistance = math.huge
-	
-	for _, folder in ipairs(eggFolders) do
-		for _, egg in pairs(folder:GetChildren()) do
-			local eggName = egg.Name:lower()
-			
-			for _, rarityName in ipairs(selectedRarities) do
-				if eggName:find(rarityName) then
-					local eggPos = egg:IsA("BasePart") and egg.Position or (egg:FindFirstChild("PrimaryPart") and egg.PrimaryPart.Position)
-					
-					if eggPos then
-						local distance = (eggPos - playerPos).Magnitude
-						
-						if distance < closestDistance then
-							closestDistance = distance
-							closestEgg = {
-								egg = egg,
-								rarityName = rarityName,
-								position = eggPos,
-								distance = distance,
-								name = egg.Name
-							}
-						end
-					end
-					break
-				end
-			end
-		end
-	end
-	
-	return closestEgg
-end
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 
-local function moveToPosition(targetPos, maxWait)
+	if humanoid then
+		humanoid.WalkSpeed = speed
+	end
+end)
+
+-- God Mode
+local godButton = Instance.new("TextButton")
+godButton.Size = UDim2.new(1, -20, 0, 35)
+godButton.Position = UDim2.fromOffset(10, 90)
+godButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+godButton.TextColor3 = Color3.new(1, 1, 1)
+godButton.Text = "God Mode: OFF"
+godButton.TextSize = 14
+godButton.Font = Enum.Font.Gotham
+godButton.Parent = frame
+
+local godMode = false
+
+godButton.MouseButton1Click:Connect(function()
+	godMode = not godMode
+	godButton.Text = "God Mode: " .. (godMode and "ON" or "OFF")
+
 	local character = player.Character
-	if not character or not character:FindFirstChild("HumanoidRootPart") then return false end
-	
-	local humanoidRootPart = character.HumanoidRootPart
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	
-	if not humanoid or humanoid.Health <= 0 then return false end
-	
-	local startTime = tick()
-	local moveSpeed = config.moveSpeed / 10
-	maxWait = maxWait or 30
-	
-	while config.autoStealEnabled and character.Parent and humanoid.Health > 0 do
-		local currentPos = humanoidRootPart.Position
-		local direction = (targetPos - currentPos)
-		local distance = direction.Magnitude
-		
-		if distance < 3 then
-			return true
-		end
-		
-		if tick() - startTime > maxWait then
-			return false
-		end
-		
-		humanoidRootPart.CFrame = humanoidRootPart.CFrame + (direction.Unit * moveSpeed * 0.016)
-		task.wait(0.016)
-	end
-	
-	return false
-end
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 
-local function collectEgg(egg)
-	local character = player.Character
-	if not character or not character:FindFirstChild("HumanoidRootPart") then return false end
-	
-	local humanoidRootPart = character.HumanoidRootPart
-	
-	-- Method 1: ProximityPrompt
-	for i = 1, 5 do
-		if not config.autoStealEnabled then return false end
-		
-		local prompt = egg:FindFirstChild("ProximityPrompt")
-		if prompt then
-			prompt:InputHoldBegin()
-			task.wait(0.5)
-			prompt:InputHoldEnd()
-			return true
-		end
-		task.wait(0.1)
-	end
-	
-	-- Method 2: ClickDetector
-	for i = 1, 5 do
-		if not config.autoStealEnabled then return false end
-		
-		local clickDetector = egg:FindFirstChild("ClickDetector")
-		if clickDetector then
-			task.wait(0.2)
-			return true
-		end
-		task.wait(0.1)
-	end
-	
-	-- Method 3: Teleport and touch
-	for i = 1, 15 do
-		if not config.autoStealEnabled then return false end
-		humanoidRootPart.CFrame = egg.CFrame + Vector3.new(0, 2, 0)
-		task.wait(0.1)
-	end
-	
-	return true
-end
-
-local function returnToSpawn()
-	if not config.spawnPoint then return true end
-	
-	local character = player.Character
-	if not character or not character:FindFirstChild("HumanoidRootPart") then return false end
-	
-	print("🏠 Returning to spawn...")
-	return moveToPosition(config.spawnPoint.Position, 20)
-end
-
---==================================================
--- MAIN AUTO STEAL LOOP
---==================================================
-
-task.spawn(function()
-	while true do
-		if config.autoStealEnabled then
-			local character = player.Character
-			
-			if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChildOfClass("Humanoid").Health > 0 then
-				local eggData = findEggByRarity()
-				
-				if eggData then
-					print("🎯 Found " .. eggData.name .. " | Distance: " .. math.floor(eggData.distance) .. " studs")
-					
-					if moveToPosition(eggData.position, 20) then
-						print("📍 Reached " .. eggData.name)
-						
-						if collectEgg(eggData.egg) then
-							config.collectedCount = config.collectedCount + 1
-							statsLabel.Text = "Eggs: " .. config.collectedCount
-							print("✨ Collected! Total: " .. config.collectedCount)
-							task.wait(0.5)
-							
-							returnToSpawn()
-							task.wait(1)
-						end
-					end
-				else
-					task.wait(0.3)
-				end
-			else
-				task.wait(0.5)
-			end
+	if humanoid then
+		if godMode then
+			humanoid.MaxHealth = 1000000
+			humanoid.Health = 1000000
 		else
-			task.wait(0.1)
+			humanoid.MaxHealth = 100
+			humanoid.Health = 100
 		end
 	end
 end)
 
---==================================================
--- CLOSE / REOPEN
---==================================================
+-- Close button
+local close = Instance.new("TextButton")
+close.Size = UDim2.fromOffset(30, 30)
+close.Position = UDim2.new(1, -35, 0, 5)
+close.BackgroundTransparency = 1
+close.Text = "×"
+close.TextColor3 = Color3.new(1, 1, 1)
+close.TextSize = 22
+close.Parent = frame
 
+-- Reopen button
 local reopen = Instance.new("TextButton")
-reopen.Name = "Reopen"
-reopen.Size = UDim2.new(0,60,0,60)
-reopen.Position = UDim2.new(0,20,0.5,-30)
-reopen.BackgroundColor3 = BG
-reopen.Text = "Λ"
-reopen.TextColor3 = BLUE
-reopen.TextScaled = true
+reopen.Size = UDim2.fromOffset(45, 45)
+reopen.Position = UDim2.fromOffset(20, 20)
+reopen.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+reopen.Text = "A"
+reopen.TextColor3 = Color3.new(1, 1, 1)
+reopen.TextSize = 20
 reopen.Font = Enum.Font.GothamBold
 reopen.Visible = false
 reopen.Parent = gui
 
-local reopenCorner = Instance.new("UICorner")
-reopenCorner.CornerRadius = UDim.new(1,0)
-reopenCorner.Parent = reopen
-
-closeButton.MouseButton1Click:Connect(function()
-	main.Visible = false
+close.MouseButton1Click:Connect(function()
+	frame.Visible = false
 	reopen.Visible = true
 end)
 
 reopen.MouseButton1Click:Connect(function()
-	main.Visible = true
+	frame.Visible = true
 	reopen.Visible = false
 end)
 
---==================================================
--- FULLSCREEN
---==================================================
-
-local fullscreen = false
-
-fullButton.MouseButton1Click:Connect(function()
-	fullscreen = not fullscreen
-
-	if fullscreen then
-		main.Position = UDim2.new(0,0,0,0)
-		main.Size = UDim2.new(1,0,1,0)
-	else
-		main.Position = UDim2.new(.03,0,.045,0)
-		main.Size = UDim2.new(.94,0,.91,0)
-	end
-end)
-
---==================================================
--- BUTTONS
---==================================================
-
-settingsButton.MouseButton1Click:Connect(function()
-	print("⚙️ ALTINA HUB Settings - More features coming soon!")
-end)
-
-searchButton.MouseButton1Click:Connect(function()
-	searchBar:CaptureFocus()
-end)
-
-print("✅ ALTINA HUB v3 ULTIMATE LOADED!")
-print("📋 COMPLETE FEATURES:")
-print("  ✓ EGGS Tab - Auto Steal with Live Egg List")
-print("  ✓ Real-time Egg Detection (Distance Display)")
-print("  ✓ Area Selection (Forest, Lake, Desert, Jungle, Snow, Volcano, Abyss)")
-print("  ✓ All 8 Rarities (Common → Divine)")
-print("  ✓ PETS Tab - Auto Place & Auto Hatch")
-print("  ✓ EVENTS Tab - Coming Soon")
-print("  ✓ Straight & Wall-To-Wall Movement Modes")
-print("  ✓ Speed Control (1-1000)")
-print("  ✓ Full Protection Suite (Anti Drop/Fling/Trap)")
-print("  ✓ Working Search & Settings")
-print("  ✓ Close/Reopen & Fullscreen")
-print("👆 START AUTO STEAL to begin!")
+What it does: clicking Speed cycles "16 → 26 → 36 ... → 96 → 16", and God Mode toggles on/off. The "×" hides the panel and the "A" button brings it back. 🤝
