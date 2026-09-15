@@ -1,71 +1,214 @@
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+--// ALTINA HUB - UI
+--// Roblox Studio LocalScript
+--// Place in StarterPlayer > StarterPlayerScripts
 
+local Players = game:GetService("Players")
 local player = Players.LocalPlayer
-local remote = ReplicatedStorage:WaitForChild("AltinaHubRemote")
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "AltinaHub"
 gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
 gui.Parent = player:WaitForChild("PlayerGui")
 
+--==================================================
+-- COLORS
+--==================================================
+
+local BG = Color3.fromRGB(5, 17, 30)
+local PANEL = Color3.fromRGB(7, 24, 40)
+local BUTTON = Color3.fromRGB(10, 31, 51)
+local BLUE = Color3.fromRGB(0, 174, 255)
+local WHITE = Color3.fromRGB(225, 238, 255)
+local MUTED = Color3.fromRGB(130, 160, 195)
+
+--==================================================
+-- MAIN
+--==================================================
+
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 850, 0, 520)
-main.Position = UDim2.new(0.5, -425, 0.5, -260)
-main.BackgroundColor3 = Color3.fromRGB(8, 13, 20)
+main.Name = "Main"
+main.Size = UDim2.new(0.94, 0, 0.91, 0)
+main.Position = UDim2.new(0.03, 0, 0.045, 0)
+main.BackgroundColor3 = BG
 main.BorderSizePixel = 0
 main.Parent = gui
 
 local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 14)
+corner.CornerRadius = UDim.new(0, 16)
 corner.Parent = main
 
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(15, 80, 120)
+stroke.Thickness = 2
+stroke.Parent = main
+
+--==================================================
+-- HEADER
+--==================================================
+
+local header = Instance.new("Frame")
+header.Size = UDim2.new(1, 0, 0.115, 0)
+header.BackgroundColor3 = Color3.fromRGB(4, 15, 27)
+header.BorderSizePixel = 0
+header.Parent = main
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(0, 350, 0, 60)
-title.Position = UDim2.new(0, 25, 0, 5)
 title.BackgroundTransparency = 1
-title.Text = "ALTINA HUB"
-title.TextColor3 = Color3.fromRGB(30, 210, 255)
-title.TextSize = 30
+title.Position = UDim2.new(0.025, 0, 0.08, 0)
+title.Size = UDim2.new(0.32, 0, 0.5, 0)
 title.Font = Enum.Font.GothamBold
+title.Text = "ΛLTINA HUB"
+title.TextColor3 = WHITE
+title.TextScaled = true
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = main
+title.Parent = header
 
-local eggsTitle = Instance.new("TextLabel")
-eggsTitle.Size = UDim2.new(0, 150, 0, 60)
-eggsTitle.Position = UDim2.new(0, 390, 0, 5)
-eggsTitle.BackgroundTransparency = 1
-eggsTitle.Text = "🥚 EGGS"
-eggsTitle.TextColor3 = Color3.new(1,1,1)
-eggsTitle.TextSize = 22
-eggsTitle.Font = Enum.Font.GothamBold
-eggsTitle.Parent = main
+local titleStroke = Instance.new("UIStroke")
+titleStroke.Color = BLUE
+titleStroke.Thickness = 0.8
+titleStroke.Parent = title
 
-local close = Instance.new("TextButton")
-close.Size = UDim2.new(0, 50, 0, 45)
-close.Position = UDim2.new(1, -60, 0, 10)
-close.Text = "×"
-close.TextSize = 32
-close.TextColor3 = Color3.new(1,1,1)
-close.BackgroundTransparency = 1
-close.Parent = main
+local eggsTab = Instance.new("TextLabel")
+eggsTab.BackgroundTransparency = 1
+eggsTab.Position = UDim2.new(0.35, 0, 0.1, 0)
+eggsTab.Size = UDim2.new(0.16, 0, 0.5, 0)
+eggsTab.Font = Enum.Font.GothamBold
+eggsTab.Text = "🥚  EGGS"
+eggsTab.TextColor3 = BLUE
+eggsTab.TextScaled = true
+eggsTab.Parent = header
+
+local discord = Instance.new("TextLabel")
+discord.BackgroundTransparency = 1
+discord.Position = UDim2.new(0.49, 0, 0.07, 0)
+discord.Size = UDim2.new(0.27, 0, 0.65, 0)
+discord.Font = Enum.Font.GothamBold
+discord.Text = "DISCORD:\nhttps://discord.gg/dVJXXGfU6J"
+discord.TextColor3 = WHITE
+discord.TextScaled = true
+discord.TextXAlignment = Enum.TextXAlignment.Left
+discord.Parent = header
+
+--==================================================
+-- HEADER BUTTONS
+--==================================================
+
+local function headerButton(text, position)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(0.045, 0, 0.65, 0)
+	b.Position = position
+	b.BackgroundTransparency = 1
+	b.Text = text
+	b.TextColor3 = WHITE
+	b.TextScaled = true
+	b.Font = Enum.Font.GothamBold
+	b.Parent = header
+	return b
+end
+
+local settingsButton = headerButton("⚙", UDim2.new(0.80, 0, 0.18, 0))
+local searchButton = headerButton("⌕", UDim2.new(0.855, 0, 0.18, 0))
+local fullButton = headerButton("⛶", UDim2.new(0.905, 0, 0.18, 0))
+local closeButton = headerButton("✕", UDim2.new(0.95, 0, 0.18, 0))
+
+--==================================================
+-- CONTENT
+--==================================================
 
 local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -40, 1, -85)
-content.Position = UDim2.new(0, 20, 0, 75)
 content.BackgroundTransparency = 1
+content.Position = UDim2.new(0.015, 0, 0.13, 0)
+content.Size = UDim2.new(0.97, 0, 0.77, 0)
 content.Parent = main
 
-local auto = Instance.new("TextLabel")
-auto.Size = UDim2.new(0, 300, 0, 45)
-auto.Position = UDim2.new(0, 15, 0, 10)
-auto.BackgroundTransparency = 1
-auto.Text = "AUTO COLLECT EGGS"
-auto.TextColor3 = Color3.new(1,1,1)
-auto.TextSize = 22
-auto.Font = Enum.Font.GothamBold
-auto.TextXAlignment = Enum.TextXAlignment.Left
-auto.Parent = content
+--==================================================
+-- PANEL FUNCTION
+--==================================================
+
+local function makePanel(name, pos, size)
+	local p = Instance.new("Frame")
+	p.Name = name
+	p.Position = pos
+	p.Size = size
+	p.BackgroundColor3 = PANEL
+	p.BorderSizePixel = 0
+	p.Parent = content
+
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, 10)
+	c.Parent = p
+
+	local s = Instance.new("UIStroke")
+	s.Color = Color3.fromRGB(13, 53, 80)
+	s.Thickness = 1
+	s.Parent = p
+
+	return p
+end
+
+--==================================================
+-- BUTTON FUNCTION
+--==================================================
+
+local function makeButton(parent, text, pos, size)
+	local b = Instance.new("TextButton")
+	b.Position = pos
+	b.Size = size
+	b.BackgroundColor3 = BUTTON
+	b.BorderSizePixel = 0
+	b.Text = text
+	b.TextColor3 = WHITE
+	b.TextScaled = true
+	b.Font = Enum.Font.GothamBold
+	b.AutoButtonColor = true
+	b.Parent = parent
+
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, 9)
+	c.Parent = b
+
+	local s = Instance.new("UIStroke")
+	s.Color = Color3.fromRGB(28, 72, 105)
+	s.Thickness = 1
+	s.Parent = b
+
+	return b
+end
+
+local function makeLabel(parent, text, pos, size)
+	local l = Instance.new("TextLabel")
+	l.BackgroundTransparency = 1
+	l.Position = pos
+	l.Size = size
+	l.Text = text
+	l.TextColor3 = WHITE
+	l.TextScaled = true
+	l.Font = Enum.Font.GothamBold
+	l.TextXAlignment = Enum.TextXAlignment.Left
+	l.Parent = parent
+	return l
+end
+
+--==================================================
+-- LEFT PANEL
+--==================================================
+
+local leftTop = makePanel(
+	"AutoSteal",
+	UDim2.new(0, 0, 0, 0),
+	UDim2.new(0.50, -8, 0.51, 0)
+)
+
+makeLabel(leftTop, "🥚  AUTO STEAL EGGS", UDim2.new(0.025,0,0.035,0), UDim2.new(0.6,0,0.09,0))
+makeLabel(leftTop, "Areas", UDim2.new(0.025,0,0.17,0), UDim2.new(0.2,0,0.08,0))
+
+local areaButton = makeButton(
+	leftTop,
+	"All     ▼",
+	UDim2.new(0.27,0,0.16,0),
+	UDim2.new(0.69,0,0.10,0)
+)
 
 local rarities = {
 	"Common",
@@ -78,105 +221,335 @@ local rarities = {
 	"Divine"
 }
 
-local selected = {}
+makeLabel(leftTop, "Rarities", UDim2.new(0.025,0,0.30,0), UDim2.new(0.2,0,0.08,0))
 
-local function createRarityButton(name, index)
-	local button = Instance.new("TextButton")
+local rarityButtons = {}
 
-	button.Size = UDim2.new(0, 150, 0, 42)
+for i, rarity in ipairs(rarities) do
+	local row = math.floor((i-1)/4)
+	local col = (i-1)%4
 
-	local column = (index - 1) % 4
-	local row = math.floor((index - 1) / 4)
-
-	button.Position = UDim2.new(
-		0,
-		15 + column * 160,
-		0,
-		70 + row * 52
+	local b = makeButton(
+		leftTop,
+		rarity,
+		UDim2.new(0.27 + col*0.22,0,0.28 + row*0.12,0),
+		UDim2.new(0.19,0,0.085,0)
 	)
 
-	button.Text = name
-	button.TextSize = 16
-	button.Font = Enum.Font.GothamBold
-	button.TextColor3 = Color3.new(1,1,1)
-	button.BackgroundColor3 = Color3.fromRGB(25, 32, 42)
+	rarityButtons[rarity] = b
 
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, 8)
-	c.Parent = button
+	b.MouseButton1Click:Connect(function()
+		b.BackgroundColor3 = BLUE
+		b.TextColor3 = Color3.new(1,1,1)
 
-	button.Parent = content
-
-	button.MouseButton1Click:Connect(function()
-		selected[name] = not selected[name]
-
-		if selected[name] then
-			button.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-			button.Text = "✓ " .. name
-		else
-			button.BackgroundColor3 = Color3.fromRGB(25, 32, 42)
-			button.Text = name
+		for name, other in pairs(rarityButtons) do
+			if name ~= rarity then
+				other.BackgroundColor3 = BUTTON
+			end
 		end
 	end)
 end
 
-for i, rarity in ipairs(rarities) do
-	createRarityButton(rarity, i)
+makeLabel(leftTop, "Mutations", UDim2.new(0.025,0,0.61,0), UDim2.new(0.2,0,0.08,0))
+
+local mutations = {"Rainbow","Gold","Silver"}
+
+for i, mutation in ipairs(mutations) do
+	local b = makeButton(
+		leftTop,
+		mutation,
+		UDim2.new(0.27+(i-1)*0.22,0,0.60,0),
+		UDim2.new(0.19,0,0.10,0)
+	)
+
+	b.MouseButton1Click:Connect(function()
+		b.BackgroundColor3 = BLUE
+	end)
 end
 
-local start = Instance.new("TextButton")
-start.Size = UDim2.new(0, 310, 0, 50)
-start.Position = UDim2.new(0, 15, 0, 190)
-start.Text = "AUTO COLLECT: OFF"
-start.TextSize = 18
-start.Font = Enum.Font.GothamBold
-start.TextColor3 = Color3.new(1,1,1)
-start.BackgroundColor3 = Color3.fromRGB(20, 35, 45)
-start.Parent = content
+makeLabel(leftTop, "Priority", UDim2.new(0.025,0,0.78,0), UDim2.new(0.2,0,0.08,0))
 
-local sc = Instance.new("UICorner")
-sc.CornerRadius = UDim.new(0, 10)
-sc.Parent = start
+local rarest = makeButton(leftTop,"Rarest",UDim2.new(0.27,0,0.77,0),UDim2.new(0.25,0,0.10,0))
+local weight = makeButton(leftTop,"Weight",UDim2.new(0.55,0,0.77,0),UDim2.new(0.25,0,0.10,0))
 
-local active = false
+rarest.MouseButton1Click:Connect(function()
+	rarest.BackgroundColor3 = BLUE
+	weight.BackgroundColor3 = BUTTON
+end)
 
-start.MouseButton1Click:Connect(function()
-	active = not active
+weight.MouseButton1Click:Connect(function()
+	weight.BackgroundColor3 = BLUE
+	rarest.BackgroundColor3 = BUTTON
+end)
 
-	if active then
-		start.Text = "AUTO COLLECT: ON ✓"
-		start.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
+--==================================================
+-- PROTECTION
+--==================================================
 
-		remote:FireServer("StartAutoCollect", selected)
-	else
-		start.Text = "AUTO COLLECT: OFF"
-		start.BackgroundColor3 = Color3.fromRGB(20, 35, 45)
+local protection = makePanel(
+	"Protection",
+	UDim2.new(0,0,0.535,0),
+	UDim2.new(0.50,-8,0.38,0)
+)
 
-		remote:FireServer("StopAutoCollect")
+makeLabel(protection,"🛡  PROTECTION",UDim2.new(.025,0,.05,0),UDim2.new(.5,0,.1,0))
+
+local function toggle(parent, text, y)
+	local label = makeLabel(
+		parent,
+		text,
+		UDim2.new(.025,0,y,0),
+		UDim2.new(.55,0,.13,0)
+	)
+
+	local b = makeButton(
+		parent,
+		"●",
+		UDim2.new(.83,0,y-.01,0),
+		UDim2.new(.10,0,.13,0)
+	)
+
+	local enabled = true
+
+	b.MouseButton1Click:Connect(function()
+		enabled = not enabled
+
+		if enabled then
+			b.Text = "●"
+			b.BackgroundColor3 = BLUE
+		else
+			b.Text = "○"
+			b.BackgroundColor3 = BUTTON
+		end
+	end)
+
+	return b
+end
+
+toggle(protection,"Anti Drop",.22)
+toggle(protection,"Anti Fling",.43)
+toggle(protection,"Anti Trap",.64)
+
+--==================================================
+-- RIGHT MOVEMENT
+--==================================================
+
+local movement = makePanel(
+	"Movement",
+	UDim2.new(.50,8,0,.0),
+	UDim2.new(.50,-0,0.32,0)
+)
+
+makeLabel(movement,"🏃  MOVEMENT",UDim2.new(.04,0,.06,0),UDim2.new(.5,0,.12,0))
+makeLabel(movement,"Movement Mode",UDim2.new(.04,0,.24,0),UDim2.new(.28,0,.1,0))
+
+local wall = makeButton(movement,"🔵  Wall to Wall",UDim2.new(.50,0,.20,0),UDim2.new(.30,0,.15,0))
+local straight = makeButton(movement,"⚫  Straight",UDim2.new(.82,0,.20,0),UDim2.new(.16,0,.15,0))
+
+wall.MouseButton1Click:Connect(function()
+	wall.BackgroundColor3 = BLUE
+	straight.BackgroundColor3 = BUTTON
+end)
+
+straight.MouseButton1Click:Connect(function()
+	straight.BackgroundColor3 = BLUE
+	wall.BackgroundColor3 = BUTTON
+end)
+
+makeLabel(movement,"Speed",UDim2.new(.04,0,.50,0),UDim2.new(.15,0,.1,0))
+
+local speedBox = Instance.new("TextBox")
+speedBox.Position = UDim2.new(.72,0,.47,0)
+speedBox.Size = UDim2.new(.16,0,.17,0)
+speedBox.BackgroundColor3 = BUTTON
+speedBox.Text = "16"
+speedBox.PlaceholderText = "0-1000"
+speedBox.TextColor3 = WHITE
+speedBox.TextScaled = true
+speedBox.Font = Enum.Font.GothamBold
+speedBox.ClearTextOnFocus = false
+speedBox.Parent = movement
+
+local speedCorner = Instance.new("UICorner")
+speedCorner.CornerRadius = UDim.new(0,8)
+speedCorner.Parent = speedBox
+
+makeLabel(movement,"(max 1000)",UDim2.new(.89,0,.50,0),UDim2.new(.10,0,.10,0))
+
+local speedSlider = Instance.new("Frame")
+speedSlider.Position = UDim2.new(.25,0,.54,0)
+speedSlider.Size = UDim2.new(.43,0,.06,0)
+speedSlider.BackgroundColor3 = Color3.fromRGB(25,55,80)
+speedSlider.BorderSizePixel = 0
+speedSlider.Parent = movement
+
+local sliderCorner = Instance.new("UICorner")
+sliderCorner.CornerRadius = UDim.new(1,0)
+sliderCorner.Parent = speedSlider
+
+local knob = Instance.new("TextButton")
+knob.Size = UDim2.new(0,25,0,25)
+knob.Position = UDim2.new(.016,0,.5,-12)
+knob.BackgroundColor3 = WHITE
+knob.Text = ""
+knob.Parent = speedSlider
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1,0)
+knobCorner.Parent = knob
+
+local dragging = false
+
+local function setSpeedFromX(x)
+	local relative = math.clamp(
+		(x-speedSlider.AbsolutePosition.X)/speedSlider.AbsoluteSize.X,
+		0,1
+	)
+
+	knob.Position = UDim2.new(relative, -12, .5, -12)
+
+	local speed = math.floor(relative*1000)
+	speedBox.Text = tostring(speed)
+
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+	if humanoid then
+		humanoid.WalkSpeed = speed
+	end
+end
+
+knob.MouseButton1Down:Connect(function()
+	dragging = true
+end)
+
+game:GetService("UserInputService").InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
 	end
 end)
 
-close.MouseButton1Click:Connect(function()
-	main.Visible = false
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+	if dragging and (
+		input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch
+	) then
+		setSpeedFromX(input.Position.X)
+	end
 end)
 
--- Reopen button
+speedBox.FocusLost:Connect(function()
+	local value = tonumber(speedBox.Text) or 16
+	value = math.clamp(value,0,1000)
+	speedBox.Text = tostring(value)
+
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+	if humanoid then
+		humanoid.WalkSpeed = value
+	end
+end)
+
+--==================================================
+-- MY PLOT EGGS
+--==================================================
+
+local plot = makePanel(
+	"MyPlot",
+	UDim2.new(.50,8,.34,0),
+	UDim2.new(.50,-0,.57,0)
+)
+
+makeLabel(plot,"⬡  MY PLOT EGGS",UDim2.new(.04,0,.04,0),UDim2.new(.5,0,.09,0))
+
+local placeToggle = toggle(plot,"Auto Place Eggs",.15)
+
+makeLabel(plot,"Rarities",UDim2.new(.04,0,.28,0),UDim2.new(.2,0,.08,0))
+
+for i, rarity in ipairs(rarities) do
+	local row = math.floor((i-1)/4)
+	local col = (i-1)%4
+
+	local b = makeButton(
+		plot,
+		rarity,
+		UDim2.new(.27+col*.18,0,.27+row*.13,0),
+		UDim2.new(.15,0,.09,0)
+	)
+
+	b.MouseButton1Click:Connect(function()
+		b.BackgroundColor3 = BLUE
+	end)
+end
+
+makeLabel(plot,"Mutations",UDim2.new(.04,0,.57,0),UDim2.new(.2,0,.08,0))
+
+for i, mutation in ipairs(mutations) do
+	local b = makeButton(
+		plot,
+		mutation,
+		UDim2.new(.27+(i-1)*.18,0,.56,0),
+		UDim2.new(.15,0,.09,0)
+	)
+
+	b.MouseButton1Click:Connect(function()
+		b.BackgroundColor3 = BLUE
+	end)
+end
+
+local hatchToggle = toggle(plot,"Auto Hatch Ready Eggs",.69)
+
+makeLabel(plot,"Rarities",UDim2.new(.04,0,.82,0),UDim2.new(.2,0,.08,0))
+
+--==================================================
+-- SEARCH BAR
+--==================================================
+
+local searchBar = Instance.new("TextBox")
+searchBar.Position = UDim2.new(.015,0,.91,0)
+searchBar.Size = UDim2.new(.95,0,.065,0)
+searchBar.BackgroundColor3 = PANEL
+searchBar.BorderSizePixel = 0
+searchBar.Text = ""
+searchBar.PlaceholderText = "🔍  Search..."
+searchBar.PlaceholderColor3 = MUTED
+searchBar.TextColor3 = WHITE
+searchBar.TextScaled = true
+searchBar.Font = Enum.Font.GothamBold
+searchBar.ClearTextOnFocus = false
+searchBar.Parent = main
+
+local searchCorner = Instance.new("UICorner")
+searchCorner.CornerRadius = UDim.new(0,9)
+searchCorner.Parent = searchBar
+
+local searchStroke = Instance.new("UIStroke")
+searchStroke.Color = Color3.fromRGB(13,53,80)
+searchStroke.Parent = searchBar
+
+--==================================================
+-- CLOSE / REOPEN
+--==================================================
+
 local reopen = Instance.new("TextButton")
-reopen.Size = UDim2.new(0, 55, 0, 55)
-reopen.Position = UDim2.new(0, 20, 0.5, -27)
-reopen.Text = "A"
-reopen.TextSize = 24
+reopen.Name = "Reopen"
+reopen.Size = UDim2.new(0,60,0,60)
+reopen.Position = UDim2.new(0,20,0.5,-30)
+reopen.BackgroundColor3 = BG
+reopen.Text = "Λ"
+reopen.TextColor3 = BLUE
+reopen.TextScaled = true
 reopen.Font = Enum.Font.GothamBold
-reopen.TextColor3 = Color3.new(1,1,1)
-reopen.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 reopen.Visible = false
 reopen.Parent = gui
 
-local rc = Instance.new("UICorner")
-rc.CornerRadius = UDim.new(1, 0)
-rc.Parent = reopen
+local reopenCorner = Instance.new("UICorner")
+reopenCorner.CornerRadius = UDim.new(1,0)
+reopenCorner.Parent = reopen
 
-close.MouseButton1Click:Connect(function()
+closeButton.MouseButton1Click:Connect(function()
 	main.Visible = false
 	reopen.Visible = true
 end)
@@ -185,3 +558,35 @@ reopen.MouseButton1Click:Connect(function()
 	main.Visible = true
 	reopen.Visible = false
 end)
+
+--==================================================
+-- FULLSCREEN
+--==================================================
+
+local fullscreen = false
+
+fullButton.MouseButton1Click:Connect(function()
+	fullscreen = not fullscreen
+
+	if fullscreen then
+		main.Position = UDim2.new(0,0,0,0)
+		main.Size = UDim2.new(1,0,1,0)
+	else
+		main.Position = UDim2.new(.03,0,.045,0)
+		main.Size = UDim2.new(.94,0,.91,0)
+	end
+end)
+
+--==================================================
+-- SETTINGS BUTTON
+--==================================================
+
+settingsButton.MouseButton1Click:Connect(function()
+	print("ALTINA HUB Settings clicked")
+end)
+
+searchButton.MouseButton1Click:Connect(function()
+	searchBar:CaptureFocus()
+end)
+
+print("ALTINA HUB loaded successfully!")
