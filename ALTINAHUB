@@ -1,124 +1,122 @@
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
 local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
+--// CONFIG
+local MAX_SPEED = 1000
+
+--// GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "AltinaGUI"
+gui.Name = "EggGameUI"
 gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.IgnoreGuiInset = true
+gui.Parent = playerGui
 
--- Main frame
-local frame = Instance.new("Frame")
-frame.Size = UDim2.fromOffset(220, 170)
-frame.Position = UDim2.new(0, 20, 0.5, -85)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-frame.BorderSizePixel = 0
-frame.Parent = gui
+--// Main
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.fromOffset(300, 360)
+main.Position = UDim2.new(0.5, -150, 0.5, -180)
+main.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+main.BorderSizePixel = 0
+main.Parent = gui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = frame
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 18)
+mainCorner.Parent = main
 
--- Title
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(70, 70, 85)
+stroke.Thickness = 1.5
+stroke.Transparency = 0.2
+stroke.Parent = main
+
+--// Header
+local header = Instance.new("Frame")
+header.Size = UDim2.new(1, 0, 0, 70)
+header.BackgroundTransparency = 1
+header.Parent = main
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 35)
+title.Size = UDim2.new(1, -30, 0, 32)
+title.Position = UDim2.fromOffset(15, 10)
 title.BackgroundTransparency = 1
-title.Text = "ALTINA"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.TextSize = 20
+title.Text = "🥚  EGG GAME"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 23
 title.Font = Enum.Font.GothamBold
-title.Parent = frame
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = header
 
--- Speed button
-local speedButton = Instance.new("TextButton")
-speedButton.Size = UDim2.new(1, -20, 0, 35)
-speedButton.Position = UDim2.fromOffset(10, 45)
-speedButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-speedButton.TextColor3 = Color3.new(1, 1, 1)
-speedButton.Text = "Speed: 16"
-speedButton.TextSize = 14
-speedButton.Font = Enum.Font.Gotham
-speedButton.Parent = frame
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(1, -30, 0, 20)
+subtitle.Position = UDim2.fromOffset(16, 42)
+subtitle.BackgroundTransparency = 1
+subtitle.Text = "PERSONAL STUDIO PANEL"
+subtitle.TextColor3 = Color3.fromRGB(145, 145, 160)
+subtitle.TextSize = 11
+subtitle.Font = Enum.Font.GothamMedium
+subtitle.TextXAlignment = Enum.TextXAlignment.Left
+subtitle.Parent = header
 
-local speed = 16
+--// Helper
+local function makeButton(text, y)
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(1, -30, 0, 48)
+	button.Position = UDim2.fromOffset(15, y)
+	button.BackgroundColor3 = Color3.fromRGB(31, 31, 40)
+	button.BorderSizePixel = 0
+	button.Text = text
+	button.TextColor3 = Color3.fromRGB(240, 240, 245)
+	button.TextSize = 15
+	button.Font = Enum.Font.GothamBold
+	button.AutoButtonColor = false
+	button.Parent = main
 
-speedButton.MouseButton1Click:Connect(function()
-	speed += 10
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 11)
+	corner.Parent = button
 
-	if speed > 100 then
-		speed = 16
-	end
+	button.MouseEnter:Connect(function()
+		TweenService:Create(
+			button,
+			TweenInfo.new(0.15),
+			{BackgroundColor3 = Color3.fromRGB(45, 45, 58)}
+		):Play()
+	end)
 
-	speedButton.Text = "Speed: " .. speed
+	button.MouseLeave:Connect(function()
+		TweenService:Create(
+			button,
+			TweenInfo.new(0.15),
+			{BackgroundColor3 = Color3.fromRGB(31, 31, 40)}
+		):Play()
+	end)
 
-	local character = player.Character
-	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	button.MouseButton1Down:Connect(function()
+		TweenService:Create(
+			button,
+			TweenInfo.new(0.08),
+			{Size = UDim2.new(1, -34, 0, 45)}
+		):Play()
+	end)
 
-	if humanoid then
-		humanoid.WalkSpeed = speed
-	end
-end)
+	button.MouseButton1Up:Connect(function()
+		TweenService:Create(
+			button,
+			TweenInfo.new(0.08),
+			{Size = UDim2.new(1, -30, 0, 48)}
+		):Play()
+	end)
 
--- God Mode
-local godButton = Instance.new("TextButton")
-godButton.Size = UDim2.new(1, -20, 0, 35)
-godButton.Position = UDim2.fromOffset(10, 90)
-godButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-godButton.TextColor3 = Color3.new(1, 1, 1)
-godButton.Text = "God Mode: OFF"
-godButton.TextSize = 14
-godButton.Font = Enum.Font.Gotham
-godButton.Parent = frame
+	return button
+end
 
-local godMode = false
-
-godButton.MouseButton1Click:Connect(function()
-	godMode = not godMode
-	godButton.Text = "God Mode: " .. (godMode and "ON" or "OFF")
-
-	local character = player.Character
-	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-
-	if humanoid then
-		if godMode then
-			humanoid.MaxHealth = 1000000
-			humanoid.Health = 1000000
-		else
-			humanoid.MaxHealth = 100
-			humanoid.Health = 100
-		end
-	end
-end)
-
--- Close button
-local close = Instance.new("TextButton")
-close.Size = UDim2.fromOffset(30, 30)
-close.Position = UDim2.new(1, -35, 0, 5)
-close.BackgroundTransparency = 1
-close.Text = "×"
-close.TextColor3 = Color3.new(1, 1, 1)
-close.TextSize = 22
-close.Parent = frame
-
--- Reopen button
-local reopen = Instance.new("TextButton")
-reopen.Size = UDim2.fromOffset(45, 45)
-reopen.Position = UDim2.fromOffset(20, 20)
-reopen.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-reopen.Text = "A"
-reopen.TextColor3 = Color3.new(1, 1, 1)
-reopen.TextSize = 20
-reopen.Font = Enum.Font.GothamBold
-reopen.Visible = false
-reopen.Parent = gui
-
-close.MouseButton1Click:Connect(function()
-	frame.Visible = false
-	reopen.Visible = true
-end)
-
-reopen.MouseButton1Click:Connect(function()
-	frame.Visible = true
-	reopen.Visible = false
-end)
-
-What it does: clicking Speed cycles "16 → 26 → 36 ... → 96 → 16", and God Mode toggles on/off. The "×" hides the panel and the "A" button brings it back. 🤝
+--// Speed
+local speedBox = Instance.new("TextBox")
+speedBox.Size = UDim2.new(1, -30, 0, 48)
+speedBox.Position = UDim2.fromOffset(15, 82)
+speedBox.BackgroundColor
