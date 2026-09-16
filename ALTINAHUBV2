@@ -1,492 +1,433 @@
--- // Services
-local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
+-- ALTINAHUBV2
+-- Studio-safe UI framework for your own Roblox game
+
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
 
--- // Clean up old UI if exists
-if CoreGui:FindFirstChild("ALTINAHUBV2") then
-    CoreGui.ALTINAHUBV2:Destroy()
-end
+local player = Players.LocalPlayer
 
--- // Main ScreenGui
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ALTINAHUBV2"
-ScreenGui.Parent = CoreGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.ResetOnSpawn = false
+--// GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "ALTINAHUBV2"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
 
--- // Floating Open/Close Button (Draggable)
-local OpenButton = Instance.new("TextButton")
-OpenButton.Name = "FloatingToggle"
-OpenButton.Parent = ScreenGui
-OpenButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-OpenButton.Position = UDim2.new(0, 20, 0.5, -25)
-OpenButton.Size = UDim2.new(0, 50, 0, 50)
-OpenButton.Font = Enum.Font.GothamBold
-OpenButton.Text = "ALT"
-OpenButton.TextColor3 = Color3.fromRGB(255, 100, 100)
-OpenButton.TextSize = 14
-OpenButton.Visible = false -- Starts hidden or shown depending on preference (we'll make it visible when main UI closes)
-Instance.new("UICorner", OpenButton).CornerRadius = UDim.new(1, 0)
+--// Main
+local main = Instance.new("Frame")
+main.Size = UDim2.fromOffset(570, 420)
+main.Position = UDim2.new(.5, -285, .5, -210)
+main.BackgroundColor3 = Color3.fromRGB(20,20,25)
+main.BorderSizePixel = 0
+main.Parent = gui
 
--- // Main Frame
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
-MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
-MainFrame.Size = UDim2.new(0, 600, 0, 400)
-MainFrame.Visible = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,12)
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 8)
-MainCorner.Parent = MainFrame
+--// Top bar
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1,0,0,48)
+top.BackgroundColor3 = Color3.fromRGB(28,28,35)
+top.BorderSizePixel = 0
+top.Parent = main
 
--- // Top Bar (Drag Zone)
-local TopBar = Instance.new("Frame")
-TopBar.Name = "TopBar"
-TopBar.Parent = MainFrame
-TopBar.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
-TopBar.BorderSizePixel = 0
-TopBar.Size = UDim2.new(1, 0, 0, 40)
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,-110,1,0)
+title.Position = UDim2.fromOffset(15,0)
+title.BackgroundTransparency = 1
+title.Text = "ALTINAHUBV2"
+title.TextColor3 = Color3.new(1,1,1)
+title.TextSize = 20
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = top
 
-local TopBarCorner = Instance.new("UICorner")
-TopBarCorner.CornerRadius = UDim.new(0, 8)
-TopBarCorner.Parent = TopBar
+-- Close
+local close = Instance.new("TextButton")
+close.Size = UDim2.fromOffset(40,32)
+close.Position = UDim2.new(1,-48,0,8)
+close.Text = "×"
+close.TextSize = 24
+close.TextColor3 = Color3.new(1,1,1)
+close.BackgroundColor3 = Color3.fromRGB(180,50,60)
+close.Parent = top
+Instance.new("UICorner",close).CornerRadius = UDim.new(0,8)
 
-local TopBarCover = Instance.new("Frame")
-TopBarCover.Name = "TopBarCover"
-TopBarCover.Parent = TopBar
-TopBarCover.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
-TopBarCover.BorderSizePixel = 0
-TopBarCover.Position = UDim2.new(0, 0, 1, -5)
-TopBarCover.Size = UDim2.new(1, 0, 0, 5)
+--// Sidebar
+local side = Instance.new("Frame")
+side.Size = UDim2.fromOffset(145,372)
+side.Position = UDim2.fromOffset(0,48)
+side.BackgroundColor3 = Color3.fromRGB(24,24,30)
+side.BorderSizePixel = 0
+side.Parent = main
 
--- Title
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Name = "TitleLabel"
-TitleLabel.Parent = TopBar
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Position = UDim2.new(0, 15, 0, 0)
-TitleLabel.Size = UDim2.new(0, 200, 1, 0)
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "ALTINAHUB V2"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.TextSize = 14
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+local content = Instance.new("ScrollingFrame")
+content.Size = UDim2.new(1,-155,1,-58)
+content.Position = UDim2.fromOffset(150,53)
+content.BackgroundTransparency = 1
+content.BorderSizePixel = 0
+content.ScrollBarThickness = 4
+content.Parent = main
 
--- Settings Button
-local SettingsBtn = Instance.new("TextButton")
-SettingsBtn.Name = "SettingsButton"
-SettingsBtn.Parent = TopBar
-SettingsBtn.BackgroundColor3 = Color3.fromRGB(38, 38, 48)
-SettingsBtn.Position = UDim2.new(1, -75, 0.5, -12)
-SettingsBtn.Size = UDim2.new(0, 24, 0, 24)
-SettingsBtn.Font = Enum.Font.GothamBold
-SettingsBtn.Text = "⚙️"
-SettingsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SettingsBtn.TextSize = 12
-Instance.new("UICorner", SettingsBtn).CornerRadius = UDim.new(0, 4)
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0,8)
+layout.Parent = content
 
--- Search Button
-local SearchBtn = Instance.new("TextButton")
-SearchBtn.Name = "SearchButton"
-SearchBtn.Parent = TopBar
-SearchBtn.BackgroundColor3 = Color3.fromRGB(38, 38, 48)
-SearchBtn.Position = UDim2.new(1, -105, 0.5, -12)
-SearchBtn.Size = UDim2.new(0, 24, 0, 24)
-SearchBtn.Font = Enum.Font.GothamBold
-SearchBtn.Text = "🔎"
-SearchBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SearchBtn.TextSize = 12
-Instance.new("UICorner", SearchBtn).CornerRadius = UDim.new(0, 4)
+--// Floating toggle
+local float = Instance.new("TextButton")
+float.Size = UDim2.fromOffset(58,58)
+float.Position = UDim2.new(0,20,.5,0)
+float.Text = "A"
+float.TextSize = 22
+float.Font = Enum.Font.GothamBold
+float.TextColor3 = Color3.new(1,1,1)
+float.BackgroundColor3 = Color3.fromRGB(90,60,190)
+float.Visible = false
+float.Parent = gui
+Instance.new("UICorner",float).CornerRadius = UDim.new(1,0)
 
--- Close Button
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Name = "CloseButton"
-CloseBtn.Parent = TopBar
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-CloseBtn.Position = UDim2.new(1, -35, 0.5, -12)
-CloseBtn.Size = UDim2.new(0, 24, 0, 24)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.TextSize = 12
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 4)
+--// Dragging
+local dragging = false
+local dragStart
+local startPos
 
--- // Sidebar Navigation Tabs
-local Sidebar = Instance.new("ScrollingFrame")
-Sidebar.Name = "Sidebar"
-Sidebar.Parent = MainFrame
-Sidebar.Active = true
-Sidebar.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
-Sidebar.BorderSizePixel = 0
-Sidebar.Position = UDim2.new(0, 0, 0, 40)
-Sidebar.Size = UDim2.new(0, 140, 1, -40)
-Sidebar.CanvasSize = UDim2.new(0, 0, 0, 250)
-Sidebar.ScrollBarThickness = 2
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = Sidebar
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 5)
-
-local UIPadding = Instance.new("UIPadding")
-UIPadding.Parent = Sidebar
-UIPadding.PaddingTop = UDim.new(0, 10)
-UIPadding.PaddingLeft = UDim.new(0, 10)
-UIPadding.PaddingRight = UDim.new(0, 10)
-
--- // Content Container
-local ContentContainer = Instance.new("Frame")
-ContentContainer.Name = "ContentContainer"
-ContentContainer.Parent = MainFrame
-ContentContainer.BackgroundTransparency = 1
-ContentContainer.Position = UDim2.new(0, 150, 0, 50)
-ContentContainer.Size = UDim2.new(1, -160, 1, -60)
-
-local Tabs = {}
-local function CreateTabPanel(name)
-    local TabPage = Instance.new("ScrollingFrame")
-    TabPage.Name = name .. "Panel"
-    TabPage.Parent = ContentContainer
-    TabPage.Active = true
-    TabPage.BackgroundTransparency = 1
-    TabPage.Size = UDim2.new(1, 0, 1, 0)
-    TabPage.CanvasSize = UDim2.new(0, 0, 0, 850)
-    TabPage.ScrollBarThickness = 4
-    TabPage.Visible = false
-    
-    local layout = Instance.new("UIListLayout")
-    layout.Parent = TabPage
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Padding = UDim.new(0, 10)
-    
-    Tabs[name] = TabPage
-    return TabPage
-end
-
--- // Create Tabs
-local EggsTab = CreateTabPanel("EGGS")
-local PetsTab = CreateTabPanel("PETS")
-local EventsTab = CreateTabPanel("EVENTS")
-local PlotEggsTab = CreateTabPanel("PLOT_EGGS")
-local ProtectionTab = CreateTabPanel("PROTECTION")
-local MovementTab = CreateTabPanel("MOVEMENT")
-
-EggsTab.Visible = true
-
-local function CreateTabButton(name, text, targetTab)
-    local Btn = Instance.new("TextButton")
-    Btn.Name = name .. "TabBtn"
-    Btn.Parent = Sidebar
-    Btn.BackgroundColor3 = Color3.fromRGB(32, 32, 40)
-    Btn.Size = UDim2.new(1, 0, 0, 32)
-    Btn.Font = Enum.Font.GothamMedium
-    Btn.Text = text
-    Btn.TextColor3 = Color3.fromRGB(180, 180, 190)
-    Btn.TextSize, Btn.TextXAlignment = 12, Enum.TextXAlignment.Left
-    
-    local pad = Instance.new("UIPadding")
-    pad.Parent = Btn
-    pad.PaddingLeft = UDim.new(0, 10)
-    
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
-    
-    Btn.MouseButton1Click:Connect(function()
-        for _, tab in pairs(Tabs) do tab.Visible = false end
-        for _, child in pairs(Sidebar:GetChildren()) do
-            if child:IsA("TextButton") then child.TextColor3 = Color3.fromRGB(180, 180, 190) end
-        end
-        targetTab.Visible = true
-        Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end)
-end
-
-CreateTabButton("EGGS", "🥚 EGGS", EggsTab)
-CreateTabButton("PETS", "🐾 PETS", PetsTab)
-CreateTabButton("EVENTS", "🎉 EVENTS", EventsTab)
-CreateTabButton("PLOT", "📦 My Plot Eggs", PlotEggsTab)
-CreateTabButton("PROTECTION", "🛡️ Protection", ProtectionTab)
-CreateTabButton("MOVEMENT", "🏃 Movement", MovementTab)
-
--- // UI Element Generators
-local function CreateSectionHeader(parent, text)
-    local lbl = Instance.new("TextLabel")
-    lbl.Parent = parent
-    lbl.BackgroundTransparency = 1
-    lbl.Size = UDim2.new(1, 0, 0, 24)
-    lbl.Font = Enum.Font.GothamBold
-    lbl.Text = text
-    lbl.TextColor3 = Color3.fromRGB(120, 170, 255)
-    lbl.TextSize = 13
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-end
-
-local function CreateToggle(parent, text, callback)
-    local toggled = false
-    local frame = Instance.new("TextButton")
-    frame.Parent = parent
-    frame.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
-    frame.Size = UDim2.new(1, -10, 0, 32)
-    frame.AutoButtonColor = false
-    frame.Text = ""
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
-    
-    local lbl = Instance.new("TextLabel")
-    lbl.Parent = frame
-    lbl.BackgroundTransparency = 1
-    lbl.Position = UDim2.new(0, 10, 0, 0)
-    lbl.Size = UDim2.new(1, -50, 1, 0)
-    lbl.Font = Enum.Font.Gotham
-    lbl.Text = text
-    lbl.TextColor3 = Color3.fromRGB(220, 220, 230)
-    lbl.TextSize = 12
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local indicator = Instance.new("TextLabel")
-    indicator.Parent = frame
-    indicator.BackgroundTransparency = 1
-    indicator.Position = UDim2.new(1, -35, 0, 0)
-    indicator.Size = UDim2.new(0, 30, 1, 0)
-    indicator.Font = Enum.Font.GothamBold
-    indicator.Text = "( )"
-    indicator.TextColor3 = Color3.fromRGB(200, 50, 50)
-    indicator.TextSize = 12
-    
-    frame.MouseButton1Click:Connect(function()
-        toggled = not toggled
-        indicator.Text = toggled and "(✓)" or "( )"
-        indicator.TextColor3 = toggled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
-        if callback then callback(toggled) end
-    end)
-end
-
-local function CreateDropdown(parent, text, options, callback)
-    local dropdownOpen = false
-    local container = Instance.new("Frame")
-    container.Parent = parent
-    container.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
-    container.Size = UDim2.new(1, -10, 0, 32)
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 6)
-    
-    local btn = Instance.new("TextButton")
-    btn.Parent = container
-    btn.BackgroundTransparency = 1
-    btn.Size = UDim2.new(1, 0, 0, 32)
-    btn.Font = Enum.Font.Gotham
-    btn.Text = "  " .. text .. ": Select..."
-    btn.TextColor3 = Color3.fromRGB(220, 220, 230)
-    btn.TextSize = 12
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local listFrame = Instance.new("ScrollingFrame")
-    listFrame.Parent = container
-    listFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
-    listFrame.Position = UDim2.new(0, 0, 1, 4)
-    listFrame.Size = UDim2.new(1, 0, 0, 0)
-    listFrame.Visible = false
-    listFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 26)
-    listFrame.ScrollBarThickness = 2
-    Instance.new("UICorner", listFrame).CornerRadius = UDim.new(0, 6)
-    
-    local layout = Instance.new("UIListLayout")
-    layout.Parent = listFrame
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    
-    for _, opt in ipairs(options) do
-        local optBtn = Instance.new("TextButton")
-        optBtn.Parent = listFrame
-        optBtn.BackgroundTransparency = 1
-        optBtn.Size = UDim2.new(1, 0, 0, 26)
-        optBtn.Font = Enum.Font.Gotham
-        optBtn.Text = "   " .. opt
-        optBtn.TextColor3 = Color3.fromRGB(180, 180, 190)
-        optBtn.TextSize = 11
-        optBtn.TextXAlignment = Enum.TextXAlignment.Left
-        
-        optBtn.MouseButton1Click:Connect(function()
-            btn.Text = "  " .. text .. ": " .. opt
-            dropdownOpen = false
-            listFrame.Visible = false
-            container.Size = UDim2.new(1, -10, 0, 32)
-            if callback then callback(opt) end
-        end)
-    end
-    
-    btn.MouseButton1Click:Connect(function()
-        dropdownOpen = not dropdownOpen
-        listFrame.Visible = dropdownOpen
-        container.Size = UDim2.new(1, -10, 0, dropdownOpen and math.clamp(#options * 26 + 36, 36, 150) or 32)
-    end)
-end
-
-local function CreateSlider(parent, text, min, max, callback)
-    local container = Instance.new("Frame")
-    container.Parent = parent
-    container.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
-    container.Size = UDim2.new(1, -10, 0, 50)
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 6)
-    
-    local lbl = Instance.new("TextLabel")
-    lbl.Parent = container
-    lbl.BackgroundTransparency = 1
-    lbl.Position = UDim2.new(0, 10, 0, 5)
-    lbl.Size = UDim2.new(1, -20, 0, 20)
-    lbl.Font = Enum.Font.Gotham
-    lbl.Text = text .. ": " .. min
-    lbl.TextColor3 = Color3.fromRGB(220, 220, 230)
-    lbl.TextSize = 12
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local sliderBg = Instance.new("Frame")
-    sliderBg.Parent = container
-    sliderBg.BackgroundColor3 = Color3.fromRGB(38, 38, 48)
-    sliderBg.Position = UDim2.new(0, 10, 0, 30)
-    sliderBg.Size = UDim2.new(1, -20, 0, 6)
-    Instance.new("UICorner", sliderBg).CornerRadius = UDim.new(1, 0)
-    
-    local sliderFill = Instance.new("Frame")
-    sliderFill.Parent = sliderBg
-    sliderFill.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
-    sliderFill.Size = UDim2.new(0, 0, 1, 0)
-    Instance.new("UICorner", sliderFill).CornerRadius = UDim.new(1, 0)
-    
-    local dragging = false
-    sliderBg.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local pos = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
-            sliderFill.Size = UDim2.new(pos, 0, 1, 0)
-            local val = math.floor(min + (max - min) * pos)
-            lbl.Text = text .. ": " .. val
-            if callback then callback(val) end
-        end
-    end)
-end
-
--- // TAB CONTENTS POPULATION
-
--- 1. EGGS TAB (Upgraded Auto Steal Engine)
-CreateSectionHeader(EggsTab, "Advanced Auto Steal Eggs")
-CreateToggle(EggsTab, "Auto Steal Eggs", function(v) 
-    print("[ALTINAHUBV2] Auto Steal Engine -> Status:", v)
-    -- Advanced automation loop placeholder logic can hook here
-end)
-CreateToggle(EggsTab, "Instant Teleport Steal", function(v) print("Instant Steal Mode:", v) end)
-
-CreateSectionHeader(EggsTab, "Areas Configuration")
-CreateDropdown(EggsTab, "Area", {"Forest", "Lake", "Desert", "jungle snow", "Volcano", "Abyss ocean", "Prehistoric", "Cosmic", "Cherry", "titan temple", "angels & devils"}, function(v) print("Target Area Selected:", v) end)
-
-CreateSectionHeader(EggsTab, "Target Filters")
-CreateDropdown(EggsTab, "Rarity Filter", {"common", "uncommon", "rare", "legendary", "mythic", "secret", "internal", "divine"}, function(v) print("Target Rarity:", v) end)
-CreateDropdown(EggsTab, "Mutation Filter", {"rainbow", "gold", "silver"}, function(v) print("Target Mutation:", v) end)
-CreateDropdown(EggsTab, "Priority", {"rarest", "weight"}, function(v) print("Target Priority:", v) end)
-
--- 2. PETS TAB
-CreateSectionHeader(PetsTab, "Pet Configurations")
-CreateToggle(PetsTab, "Auto Equip Best Pets", function(v) print("Auto Equip Pets:", v) end)
-
--- 3. EVENTS TAB
-CreateSectionHeader(EventsTab, "Event Management")
-CreateToggle(EventsTab, "Auto Farm Event", function(v) print("Event Farming:", v) end)
-
--- 4. MY PLOT EGGS TAB
-CreateSectionHeader(PlotEggsTab, "Plot Automation")
-CreateToggle(PlotEggsTab, "Auto Place Eggs", function(v) print("Auto Place Eggs:", v) end)
-CreateDropdown(PlotEggsTab, "Place Rarities", {"common", "uncommon", "rare", "legendary", "mythic", "secret", "internal", "divine"}, function(v) print("Plot Place Rarity:", v) end)
-CreateDropdown(PlotEggsTab, "Place Mutations", {"rainbow", "gold", "silver"}, function(v) print("Plot Place Mutation:", v) end)
-
-CreateSectionHeader(PlotEggsTab, "Hatching Management")
-CreateToggle(PlotEggsTab, "Auto Hatch Ready Eggs", function(v) print("Auto Hatch Ready Eggs:", v) end)
-CreateDropdown(PlotEggsTab, "Hatch Rarities", {"common", "uncommon", "rare", "legendary", "mythic", "secret", "internal", "divine"}, function(v) print("Hatch Rarity Filter:", v) end)
-CreateDropdown(PlotEggsTab, "Hatch Mutations", {"rainbow", "gold", "silver"}, function(v) print("Hatch Mutation Filter:", v) end)
-
--- 5. PROTECTION TAB
-CreateSectionHeader(ProtectionTab, "Security Settings")
-CreateToggle(ProtectionTab, "Anti Drop", function(v) print("Anti Drop:", v) end)
-CreateToggle(ProtectionTab, "Anti Fling", function(v) print("Anti Fling:", v) end)
-CreateToggle(ProtectionTab, "Anti Trap", function(v) print("Anti Trap:", v) end)
-
--- 6. MOVEMENT TAB
-CreateSectionHeader(MovementTab, "Movement Mechanics")
-CreateDropdown(MovementTab, "Movement Mode", {"wall to wall", "straight"}, function(v) print("Movement Mode:", v) end)
-CreateSlider(MovementTab, "Speed", 16, 1000, function(v) 
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = v
-    end
+top.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+	or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = main.Position
+	end
 end)
 
--- // Open / Close / Floating Behavior Logic
-local uiVisible = true
+UIS.InputChanged:Connect(function(input)
+	if dragging and
+		(input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch) then
 
-local function ToggleUI()
-    uiVisible = not uiVisible
-    if uiVisible then
-        OpenButton.Visible = false
-        MainFrame.Visible = true
-        TweenService:Create(MainFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(0, 600, 0, 400), BackgroundTransparency = 0}):Play()
-    else
-        OpenButton.Visible = true
-        local shrinkTween = TweenService:Create(MainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
-        shrinkTween:Play()
-        shrinkTween.Completed:Connect(function()
-            if not uiVisible then MainFrame.Visible = false end
-        end)
-    end
+		local delta = input.Position - dragStart
+
+		main.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+	or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+--// Helpers
+local function clear()
+	for _,v in ipairs(content:GetChildren()) do
+		if not v:IsA("UIListLayout") then
+			v:Destroy()
+		end
+	end
 end
 
-CloseBtn.MouseButton1Click:Connect(ToggleUI)
-OpenButton.MouseButton1Click:Connect(ToggleUI)
+local function button(text,callback)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1,-10,0,38)
+	b.BackgroundColor3 = Color3.fromRGB(35,35,44)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Text = text
+	b.TextSize = 14
+	b.Font = Enum.Font.Gotham
+	b.Parent = content
 
--- // Make Main Window Draggable (Top Bar)
-local draggingMain, dragInputMain, dragStartMain, startPosMain
-TopBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        draggingMain = true
-        dragStartMain = input.Position
-        startPosMain = MainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then draggingMain = false end
-        end)
-    end
-end)
-TopBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInputMain = input end
+	Instance.new("UICorner",b).CornerRadius = UDim.new(0,7)
+
+	b.MouseButton1Click:Connect(callback)
+	return b
+end
+
+local function toggle(text,callback)
+	local state = false
+
+	local b = button(text.."  [OFF]",function()
+		state = not state
+		b.Text = text.."  ["..(state and "ON" or "OFF").."]"
+		callback(state)
+	end)
+
+	return b
+end
+
+local function dropdown(text,items,callback)
+	local current = 1
+
+	local b = button(text..": "..items[current],function()
+		current += 1
+		if current > #items then
+			current = 1
+		end
+
+		b.Text = text..": "..items[current]
+		callback(items[current])
+	end)
+
+	return b
+end
+
+local function header(text)
+	local h = Instance.new("TextLabel")
+	h.Size = UDim2.new(1,-10,0,30)
+	h.BackgroundTransparency = 1
+	h.Text = text
+	h.TextColor3 = Color3.fromRGB(180,150,255)
+	h.TextSize = 16
+	h.Font = Enum.Font.GothamBold
+	h.TextXAlignment = Enum.TextXAlignment.Left
+	h.Parent = content
+end
+
+--// Game callback
+local function gameAction(action,value)
+	-- Connect your own game's systems here.
+	print("[ALTINAHUBV2]",action,value)
+end
+
+--// Tabs
+local tabs = {}
+
+local function tab(name)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1,-16,0,40)
+	b.Position = UDim2.fromOffset(8,0)
+	b.BackgroundColor3 = Color3.fromRGB(34,34,42)
+	b.Text = name
+	b.TextColor3 = Color3.new(1,1,1)
+	b.TextSize = 14
+	b.Font = Enum.Font.GothamBold
+	b.Parent = side
+
+	Instance.new("UICorner",b).CornerRadius = UDim.new(0,8)
+
+	table.insert(tabs,b)
+	return b
+end
+
+local eggTab = tab("🥚  EGGS")
+eggTab.Position = UDim2.fromOffset(8,12)
+
+local petTab = tab("🐾  PETS")
+petTab.Position = UDim2.fromOffset(8,58)
+
+local eventTab = tab("🎉  EVENTS")
+eventTab.Position = UDim2.fromOffset(8,104)
+
+local protectTab = tab("🛡️  PROTECTION")
+protectTab.Position = UDim2.fromOffset(8,150)
+
+local moveTab = tab("🏃  MOVEMENT")
+moveTab.Position = UDim2.fromOffset(8,196)
+
+local plotTab = tab("📦  MY PLOT")
+plotTab.Position = UDim2.fromOffset(8,242)
+
+local settingsTab = tab("⚙️  SETTINGS")
+settingsTab.Position = UDim2.fromOffset(8,288)
+
+--// EGGS
+local function eggs()
+	clear()
+
+	header("🥚 EGG CONTROL")
+
+	toggle("Auto Steal Eggs",function(v)
+		gameAction("AutoStealEggs",v)
+	end)
+
+	dropdown("Area",{
+		"Forest","Lake","Desert","Jungle","Snow",
+		"Volcano","Abyss Ocean","Prehistoric","Cosmic",
+		"Cherry","Titan Temple","Angels & Devils"
+	},function(v)
+		gameAction("Area",v)
+	end)
+
+	dropdown("Rarity",{
+		"Common","Uncommon","Rare","Legendary",
+		"Mythic","Secret","Internal","Divine"
+	},function(v)
+		gameAction("Rarity",v)
+	end)
+
+	dropdown("Mutation",{
+		"Rainbow","Gold","Silver"
+	},function(v)
+		gameAction("Mutation",v)
+	end)
+
+	dropdown("Priority",{
+		"Rarest","Weight"
+	},function(v)
+		gameAction("Priority",v)
+	end)
+end
+
+--// PETS
+local function pets()
+	clear()
+
+	header("🐾 PETS")
+
+	toggle("Auto Equip Best",function(v)
+		gameAction("AutoEquipBest",v)
+	end)
+
+	dropdown("Pet Rarity",{
+		"Common","Uncommon","Rare","Legendary",
+		"Mythic","Secret","Internal","Divine"
+	},function(v)
+		gameAction("PetRarity",v)
+	end)
+end
+
+--// EVENTS
+local function events()
+	clear()
+
+	header("🎉 EVENTS")
+
+	toggle("Auto Event Rewards",function(v)
+		gameAction("AutoEventRewards",v)
+	end)
+
+	toggle("Event Notifications",function(v)
+		gameAction("EventNotifications",v)
+	end)
+end
+
+--// PROTECTION
+local function protection()
+	clear()
+
+	header("🛡️ PROTECTION")
+
+	toggle("Anti Drop",function(v)
+		gameAction("AntiDrop",v)
+	end)
+
+	toggle("Anti Fling",function(v)
+		gameAction("AntiFling",v)
+	end)
+
+	toggle("Anti Trap",function(v)
+		gameAction("AntiTrap",v)
+	end)
+end
+
+--// MOVEMENT
+local function movement()
+	clear()
+
+	header("🏃 MOVEMENT")
+
+	dropdown("Movement Mode",{
+		"Wall To Wall",
+		"Straight"
+	},function(v)
+		gameAction("MovementMode",v)
+	end)
+
+	local speed = button("Speed: 16",function()
+		gameAction("Speed",16)
+	end)
+
+	header("Tap Speed to cycle")
+
+	local speeds = {16,50,100,250,500,750,1000}
+	local index = 1
+
+	speed.MouseButton1Click:Connect(function()
+		index += 1
+		if index > #speeds then
+			index = 1
+		end
+
+		speed.Text = "Speed: "..speeds[index]
+		gameAction("Speed",speeds[index])
+	end)
+end
+
+--// PLOT
+local function plot()
+	clear()
+
+	header("📦 MY PLOT EGGS")
+
+	toggle("Auto Place Eggs",function(v)
+		gameAction("AutoPlaceEggs",v)
+	end)
+
+	dropdown("Place Rarity",{
+		"Common","Uncommon","Rare","Legendary",
+		"Mythic","Secret","Internal","Divine"
+	},function(v)
+		gameAction("PlaceRarity",v)
+	end)
+
+	dropdown("Place Mutation",{
+		"Rainbow","Gold","Silver"
+	},function(v)
+		gameAction("PlaceMutation",v)
+	end)
+
+	toggle("Auto Hatch Ready Eggs",function(v)
+		gameAction("AutoHatchReadyEggs",v)
+	end)
+
+	dropdown("Hatch Rarity",{
+		"Common","Uncommon","Rare","Legendary",
+		"Mythic","Secret","Internal","Divine"
+	},function(v)
+		gameAction("HatchRarity",v)
+	end)
+end
+
+--// SETTINGS
+local function settings()
+	clear()
+
+	header("⚙️ SETTINGS")
+
+	toggle("UI Sounds",function(v)
+		gameAction("UISounds",v)
+	end)
+
+	toggle("Notifications",function(v)
+		gameAction("Notifications",v)
+	end)
+
+	toggle("Compact Mode",function(v)
+		gameAction("CompactMode",v)
+	end)
+end
+
+eggTab.MouseButton1Click = eggs
+petTab.MouseButton1Click = pets
+eventTab.MouseButton1Click = events
+protectTab.MouseButton1Click = protection
+moveTab.MouseButton1Click = movement
+plotTab.MouseButton1Click = plot
+settingsTab.MouseButton1Click = settings
+
+--// Close / Open
+close.MouseButton1Click:Connect(function()
+	main.Visible = false
+	float.Visible = true
 end)
 
--- // Make Floating Toggle Button Draggable
-local draggingFloat, dragInputFloat, dragStartFloat, startPosFloat
-OpenButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        draggingFloat = true
-        dragStartFloat = input.Position
-        startPosFloat = OpenButton.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then draggingFloat = false end
-        end)
-    end
-end)
-OpenButton.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInputFloat = input end
+float.MouseButton1Click:Connect(function()
+	main.Visible = true
+	float.Visible = false
 end)
 
--- Global Input Handler for both Draggables
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInputMain and draggingMain then
-        local delta = input.Position - dragStartMain
-        MainFrame.Position = UDim2.new(startPosMain.X.Scale, startPosMain.X.Offset + delta.X, startPosMain.Y.Scale, startPosMain.Y.Offset + delta.Y)
-    elseif input == dragInputFloat and draggingFloat then
-        local delta = input.Position - dragStartFloat
-        OpenButton.Position = UDim2.new(startPosFloat.X.Scale, startPosFloat.X.Offset + delta.X, startPosFloat.Y.Scale, startPosFloat.Y.Offset + delta.Y)
-    end
-end)
-
+--// Initial tab
+eggs()
